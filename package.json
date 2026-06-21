@@ -1,0 +1,19 @@
+{
+  "name": "icqq-docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "icqq 多实现文档站（VitePress）：Node 库（icqq）与 Rust OneBot 桥",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "vitepress dev",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
