@@ -146,10 +146,12 @@
 | `size` | int | 可选，字节大小。 |
 | `seconds` | int | 可选，时长（秒）。 |
 | `transcode` | bool | 可选，是否转码（需 ffmpeg）。 |
+| `sr` | int | 可选，转码采样率。支持 `8000` / `12000` / `16000` / `24000`，默认 `24000`。 |
+| `bps` | int | 可选，转码目标码率（bits/s），默认 `34500`。 |
 | `temp` / `nt` | bool | 可选。 |
 
 ```json
-{ "type": "record", "data": { "file": "/path/to/voice.amr" } }
+{ "type": "record", "data": { "file": "/path/to/voice.mp3", "sr": 24000, "bps": 34500 } }
 ```
 
 ## video / bubble —— 视频（`bubble` 为气泡视频）
