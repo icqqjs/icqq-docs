@@ -15,8 +15,8 @@ cargo run -p icqq-app
 | `data_dir` | `"./data"` | 数据**根目录**。0.2 起按账号分目录，每个 uin 的数据落在 `data_dir/<uin>/` 下（见[数据目录布局与迁移](#数据目录布局与迁移)）。 |
 | `heartbeat_interval` | `15000` | `meta_event` 心跳周期（**毫秒**，对应 go-cqhttp 的 `heartbeat.interval`）。据此推算心跳超时。设为 `0`（或任意 `<= 0`）则完全关闭心跳（不启动心跳任务）。 |
 | `cache_group_member` | `true` | 是否缓存群成员列表。开启后收到某群首条消息会在后台拉取该群成员名册，之后 `@某人`（仅带 QQ 的 @ 段）可解析出群名片/昵称而非裸号。 |
-| `report_self_message` | `true` | 是否上报「自身消息」。登录号自己发出（含其他设备同步来）的消息以 `post_type: "message_sent"` 上报；设为 `false` 则丢弃这些事件、不下发（对齐 go-cqhttp 的 `report-self-message`，避免 bot 自发消息触发回环）。 |
-| `captcha_port` | `0` | 过滑块「本地 webui」的监听端口。`0` = 由操作系统随机分配（每次登录都可能变化）；设为固定值则始终绑定该端口，便于反向代理 / 端口转发 / 收藏固定地址。也可用环境变量 `ICQQ_CAPTCHA_PORT` 覆盖。 |
+| `report_self_message` | `true` | **（0.4.0 起）** 是否上报「自身消息」。登录号自己发出（含其他设备同步来）的消息以 `post_type: "message_sent"` 上报；设为 `false` 则丢弃这些事件、不下发（对齐 go-cqhttp 的 `report-self-message`，避免 bot 自发消息触发回环）。 |
+| `captcha_port` | `0` | **（0.4.0 起）** 过滑块「本地 webui」的监听端口。`0` = 由操作系统随机分配（每次登录都可能变化）；设为固定值则始终绑定该端口，便于反向代理 / 端口转发 / 收藏固定地址。也可用环境变量 `ICQQ_CAPTCHA_PORT` 覆盖。 |
 
 ## 数据目录布局与迁移
 
@@ -50,6 +50,19 @@ data/
 - 扫码登录的 `qrcode.png` 现保存在 `data/<uin>/` 下。
 :::
 
+## log —— 日志
+
+| 字段 | 默认值 | 说明 |
+| ---- | ---- | ---- |
+| `level` | `"info"` | 日志等级：`trace` / `debug` / `info` / `warn` / `error`。也可用环境变量 `RUST_LOG` 覆盖（env 优先）。 |
+| `dir` | 见说明 | 日志文件目录（每日轮转），**三态**：注释掉/不写 => 默认落到账号目录 `data/<uin>/logs`；`""`（空串）=> 关闭文件日志、仅控制台；`"/某/路径"` => 写到指定目录。 |
+| `retention_days` | `7` | 自动清理超过该天数的日志文件（过期先压缩为 `.gz` 再删）。`0` = 不清理。 |
+
+::: tip 渲染另由环境变量控制（不在 config.yaml 配置）
+- `ICQQ_LOG_FORMAT` = `compact` / `pretty` / `auto`（默认 `auto`：终端用 pretty、文件/非终端用 compact）。
+- `NO_COLOR`（任意非空）或 `CLICOLOR=0` 关闭控制台颜色；`CLICOLOR_FORCE` 强制开启。
+:::
+
 ## account —— 凭据 + sign server（必填）
 
 | 字段 | 必填 | 默认/示例 | 说明 |
@@ -60,6 +73,7 @@ data/
 | `platform` | 是 | `1` | 平台代码（整数），见下方平台代码表。 |
 | `apk_ver` | 否 | `"9.2.0"` | 使用哪个 apk 档案 / QQ 版本。从该平台的 apk 列表里选版本匹配的；**必须与 sign server 白盒支持的版本一致**。省略则用平台默认 apk。 |
 | `login_method` | 否 | `"qr"` / `"password"` | 登录方式。省略时由 bridge 推断：有密码 => 密码；有 sign server 但无密码 => 扫码；否则离线。 |
+| `login_protocol` | 否 | `"nt"`（默认） | 登录协议：`"nt"`（现代 QQNT EcdhService 登录，需 sign server）或 `"wt"`（旧版 wtlogin）。iMac/Watch 等**非 NT 平台**走 NT 会被服务端以「设备不支持」拒绝，须改 `"wt"`；`"wt"` 也允许密码登录在**无 sign server** 时进行。省略 = `"nt"`。 |
 
 \* 仅离线启动可省略 `sign_api_url`；真实登录必填。
 
@@ -189,6 +203,9 @@ bot 主动连出到上游。可配置多个上游。
 # 顶层运行参数
 data_dir: "./data"
 heartbeat_interval: 15000          # meta_event 心跳周期（毫秒）；<= 0 关闭心跳
+cache_group_member: true           # 缓存群成员名册，@某人 可解析名片/昵称
+report_self_message: true          # 自身消息是否以 message_sent 上报；false 不下发
+captcha_port: 0                    # 过滑块本地 webui 端口；0=随机，固定值=绑定该端口
 
 # 日志
 log:
@@ -205,6 +222,7 @@ account:
   platform: 1                      # 1=Android 2=aPad 3=Watch 4=iMac 5=iPad 6=Tim
   apk_ver: "9.2.0"                 # 必须与 sign server 白盒版本一致
   login_method: "password"         # "qr" | "password"，省略则自动推断
+  login_protocol: "nt"             # "nt"(默认) | "wt"(iMac/Watch 等非 NT 平台)
 
 # HTTP API 服务端（可多个）
 http:

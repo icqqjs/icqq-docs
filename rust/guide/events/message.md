@@ -1,6 +1,6 @@
 # 消息事件
 
-`post_type: "message"` 表示有人给 Bot 发了消息；`post_type: "message_sent"` 表示登录号自己发出了消息（包括其他设备同步来的自发消息）。
+`post_type: "message"` 表示有人给 Bot 发了消息；`post_type: "message_sent"`（**0.4.0 起**）表示登录号自己发出了消息（包括其他设备同步来的自发消息）。`message_seq`（真实协议序号）与 `target_id`（私聊接收方 / 群号）同为 0.4.0 起新增。
 
 > `message_sent` 默认上报。若不需要，可在配置里设 `report_self_message: false` 关闭（对齐 go-cqhttp 的 `report-self-message`）。详见[配置说明](../config#顶层运行参数)。
 
