@@ -225,6 +225,8 @@
 | `image` | string | 可选，封面图。 |
 | `content` | string | 可选，描述。 |
 | `audio` | string | 可选，音频。 |
+| `summary` | string | 可选，卡片摘要。 |
+| `appid` | int | 可选，来源应用 appid。 |
 
 ```json
 { "type": "share", "data": { "url": "https://example.com", "title": "标题" } }

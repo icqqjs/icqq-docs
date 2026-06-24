@@ -157,7 +157,7 @@ app.use(express.json());
 app.post("/", (req, res) => {
   const event = req.body;
 
-  if (event.post_type === "message") {
+  if (event.post_type === "message" || event.post_type === "message_sent") {
     const sender = event.sender.nickname;
     const raw = event.raw_message;
 
@@ -186,7 +186,7 @@ def handle_event():
     event = request.json
     post_type = event.get("post_type")
 
-    if post_type == "message":
+    if post_type in ("message", "message_sent"):
         msg_type = event["message_type"]
         raw = event["raw_message"]
         sender = event["sender"]["nickname"]
@@ -247,7 +247,7 @@ ws.on("message", (raw) => {
 
   if (data.post_type) {
     // 事件
-    if (data.post_type === "message") {
+    if (data.post_type === "message" || data.post_type === "message_sent") {
       console.log(`收到消息: ${data.raw_message}`);
     }
   } else if (data.echo) {
@@ -271,7 +271,7 @@ async def main():
                 data = json.loads(raw)
                 if "post_type" in data:
                     # 这是一条事件
-                    if data["post_type"] == "message":
+                    if data["post_type"] in ("message", "message_sent"):
                         print(f"收到消息: {data['raw_message']}")
                 elif "echo" in data:
                     # 这是一条 action 的响应

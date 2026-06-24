@@ -68,12 +68,14 @@ Bot 会返回一个 JSON 响应：
   "post_type": "message",
   "message_type": "group",
   "group_id": 123456,
+  "target_id": 123456,
   "user_id": 654321,
   "message": [
     {"type": "text", "data": {"text": "大家好"}}
   ],
   "raw_message": "大家好",
   "message_id": "eJx...",
+  "message_seq": 12345,
   "sender": {
     "user_id": 654321,
     "nickname": "张三",
@@ -82,9 +84,10 @@ Bot 会返回一个 JSON 响应：
 }
 ```
 
-事件分四大类：
+事件分五大类：
 
 - **message** —— 收到消息（私聊、群聊）
+- **message_sent** —— 登录号自己发出的消息（包括其他设备同步）
 - **notice** —— 通知（撤回、禁言、成员变动、戳一戳……）
 - **request** —— 请求（好友申请、入群申请）
 - **meta_event** —— 元事件（心跳、生命周期）
