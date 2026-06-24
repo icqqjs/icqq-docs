@@ -460,7 +460,18 @@ print(body["data"]["url"])
 
 ### 响应参数
 
-成功时 `data` 为 `null`。
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `file_id` | `string` | 上传后文件的 ID。 | 可用于后续撤回文件 / 转发引用。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "file_id": "<file_id>"
+}
+```
+:::
 
 ### 示例
 
@@ -632,7 +643,18 @@ print(body["data"]["folder_id"])
 
 ### 响应参数
 
-成功时 `data` 为 `null`。
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `file_id` | `string` | 上传后文件的 ID。 | 可用于后续撤回文件 / 转发引用。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "file_id": "<file_id>"
+}
+```
+:::
 
 ### 示例
 
@@ -708,7 +730,18 @@ print(body["status"])
 
 ### 响应参数
 
-成功时 `data` 为 `null`。
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `file_id` | `string` | 上传后文件的 ID。 | 可用于后续撤回文件 / 转发引用。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "file_id": "<file_id>"
+}
+```
+:::
 
 ### 示例
 
@@ -790,7 +823,18 @@ print(body["status"])
 
 ### 响应参数
 
-成功时 `data` 为 `null`。
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `file_id` | `string` | 上传后文件的 ID。 | 可用于后续撤回文件 / 转发引用。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "file_id": "<file_id>"
+}
+```
+:::
 
 ### 示例
 
