@@ -8,6 +8,7 @@
 | --- | --- |
 | `get_essence_msg_list` | 获取精华消息列表 |
 | `get_group_notice` | 获取群公告 |
+| `del_group_notice` | 删除群公告 |
 | `set_group_anonymous_ban` | 群匿名用户禁言 |
 | `check_url_safely` | 检查链接安全性 |
 | `ocr_image` | 图片 OCR |
@@ -201,6 +202,87 @@ print(body["data"])
 | --- | --- |
 | `1400` | 参数错误。 |
 | `1500` | 请求失败或认证失败。 |
+
+## 删除群公告
+
+- API: `del_group_notice`（别名 `_del_group_notice`）
+- 描述: 按公告 ID（`notice_id`）删除一条群公告。底层为对 `web.qun.qq.com/cgi-bin/announce/del_feed` 的认证 POST 请求（携带机器人 cookie 与 `bkn`）。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。 |
+| `notice_id` | `string` | 是 | - | 公告 ID（`fid`，即 `get_group_notice` 返回的 `notice_id`），不能为空。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "group_id": "<group_id>",
+  "notice_id": "<notice_id>"
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/del_group_notice' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>","notice_id":"<notice_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/del_group_notice', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    group_id: '<group_id>',
+    notice_id: '<notice_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/del_group_notice",
+    json={"group_id": "<group_id>", "notice_id": "<notice_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `group_id` 或 `notice_id` 为空。 |
+| `1500` | 删除失败、网络错误或认证失败。 |
+
+### 注意事项
+
+- `notice_id` 取自 `get_group_notice` 返回项的 `notice_id`（即公告 `fid`）。
+- 该 `del_feed` 端点与请求体移植自 go-cqhttp / MiraiGo，尚未在本分支真机核对。
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `del_group_notice` 接口（别名 `_del_group_notice`）。 |
 
 ## 群匿名用户禁言
 

@@ -8,6 +8,7 @@
 | --- | --- |
 | `get_status` | 获取运行状态 |
 | `get_version_info` | 获取版本信息 |
+| `get_supported_actions` | 获取支持的动作列表 |
 | `set_restart` | 重启（空操作） |
 | `clean_cache` | 清理缓存（空操作） |
 | `reload_event_filter` | 重载事件过滤器（空操作） |
@@ -172,6 +173,68 @@ console.log(body.data.version)
 | retcode | 说明 |
 | --- | --- |
 | `0` | 成功（恒成功）。 |
+
+## 获取支持的动作列表
+
+- API: `get_supported_actions`
+- 描述: 获取本实现支持的全部动作名称列表（对齐 go-cqhttp）。返回一个去重并按字典序排序的字符串数组。仅包含真实可处理的动作，不含仅返回 `not_supported` 的占位动作。
+
+### 请求参数
+
+无。
+
+### 响应参数
+
+`data` 为一个字符串数组（`string[]`），每个元素为一个受支持的动作名。
+
+::: code-group
+
+```json [JSON]
+[
+  "can_send_image",
+  "get_login_info",
+  "send_group_msg",
+  "set_group_kick",
+  "set_msg_emoji_like",
+  "unset_msg_emoji_like"
+]
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_supported_actions' \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+```
+
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_supported_actions', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({})
+})
+
+const body = await res.json()
+console.log(body.data) // string[]
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `0` | 成功（恒成功）。 |
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| v0.6.0 | 新增 `get_supported_actions` 接口。 |
 
 ## 重启
 

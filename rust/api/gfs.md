@@ -15,6 +15,10 @@
 | `delete_group_folder` | 删除群文件目录 |
 | `upload_group_file` | 上传群文件 |
 | `upload_private_file` | 上传私聊文件 |
+| `get_private_file_url` | 获取私聊/离线文件下载地址 |
+| `move_group_file` | 移动群文件 |
+| `rename_group_file` | 重命名群文件 |
+| `rename_group_file_folder` | 重命名群文件目录 |
 
 ## 获取群文件系统信息
 
@@ -889,3 +893,358 @@ print(body["status"])
 
 - `file` 支持本地文件路径、`file://` URI 和 `http(s)://` URL（远程文件会先下载再上传）。
 - 本地文件路径按 icqq-rust-onebot 进程所在机器解析。
+
+## 获取私聊文件下载地址
+
+- API: `get_private_file_url`
+- 描述: 获取私聊/离线文件的下载 URL。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `file_id` | `string` | 是 | - | 文件 ID。 |
+| `user_id` | `number \| string` | 否 | - | 对端 QQ 号；接受但不参与请求（协议仅以 `file_id` 定位，兼容 NapCat/LLOneBot）。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "file_id": "<file_id>"
+}
+```
+:::
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `url` | `string` | 文件下载 URL。 | - |
+
+::: code-group
+
+```json [JSON]
+{
+  "url": "https://example.com/download?file=<file_id>"
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_private_file_url' \
+  -H 'Content-Type: application/json' \
+  -d '{"file_id":"<file_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_private_file_url', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    file_id: '<file_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.data.url)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_private_file_url",
+    json={"file_id": "<file_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"]["url"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `file_id`。 |
+| `1500` | 获取下载地址失败（文件不存在或已过期）。 |
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| v0.6.0 | 新增 `get_private_file_url` 接口。 |
+
+## 移动群文件
+
+- API: `move_group_file`
+- 描述: 将群文件移动到另一个目录。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。 |
+| `file_id` | `string` | 是 | - | 文件 ID。 |
+| `target_directory` | `string` | 否 | `"/"` | 目标目录 ID；缺省或为空时移动到根目录。也接受别名 `parent_directory` / `parent_id`（兼容 NapCat）。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "group_id": "<group_id>",
+  "file_id": "<file_id>",
+  "target_directory": "<folder_id>"
+}
+```
+:::
+
+### 响应参数
+
+本动作无响应数据，成功时 `data` 为 `null`。
+
+::: code-group
+
+```json [JSON]
+null
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/move_group_file' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>","file_id":"<file_id>","target_directory":"<folder_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/move_group_file', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    group_id: '<group_id>',
+    file_id: '<file_id>',
+    target_directory: '<folder_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/move_group_file",
+    json={
+        "group_id": "<group_id>",
+        "file_id": "<file_id>",
+        "target_directory": "<folder_id>",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `group_id` 或 `file_id`。 |
+| `1500` | 移动失败。 |
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| v0.6.0 | 新增 `move_group_file` 接口。 |
+
+## 重命名群文件
+
+- API: `rename_group_file`
+- 描述: 重命名群文件系统中的一个文件。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。 |
+| `file_id` | `string` | 是 | - | 文件 ID。 |
+| `new_name` | `string` | 是 | - | 新文件名。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "group_id": "<group_id>",
+  "file_id": "<file_id>",
+  "new_name": "renamed.zip"
+}
+```
+:::
+
+### 响应参数
+
+本动作无响应数据，成功时 `data` 为 `null`。
+
+::: code-group
+
+```json [JSON]
+null
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/rename_group_file' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>","file_id":"<file_id>","new_name":"renamed.zip"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/rename_group_file', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    group_id: '<group_id>',
+    file_id: '<file_id>',
+    new_name: 'renamed.zip'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/rename_group_file",
+    json={
+        "group_id": "<group_id>",
+        "file_id": "<file_id>",
+        "new_name": "renamed.zip",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `group_id`、`file_id` 或 `new_name`。 |
+| `1500` | 重命名失败。 |
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| v0.6.0 | 新增 `rename_group_file` 接口。 |
+
+## 重命名群文件目录
+
+- API: `rename_group_file_folder`
+- 描述: 重命名群文件系统中的一个目录。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。 |
+| `folder_id` | `string` | 是 | - | 目录 ID。 |
+| `new_folder_name` | `string` | 是 | - | 新目录名称。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "group_id": "<group_id>",
+  "folder_id": "<folder_id>",
+  "new_folder_name": "renamed-folder"
+}
+```
+:::
+
+### 响应参数
+
+本动作无响应数据，成功时 `data` 为 `null`。
+
+::: code-group
+
+```json [JSON]
+null
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/rename_group_file_folder' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>","folder_id":"<folder_id>","new_folder_name":"renamed-folder"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/rename_group_file_folder', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    group_id: '<group_id>',
+    folder_id: '<folder_id>',
+    new_folder_name: 'renamed-folder'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/rename_group_file_folder",
+    json={
+        "group_id": "<group_id>",
+        "folder_id": "<folder_id>",
+        "new_folder_name": "renamed-folder",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `group_id`、`folder_id` 或 `new_folder_name`。 |
+| `1500` | 重命名失败。 |
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| v0.6.0 | 新增 `rename_group_file_folder` 接口。 |

@@ -14,12 +14,16 @@
 | `send_group_forward_msg` | 发送群合并转发 |
 | `send_private_forward_msg` | 发送私聊合并转发 |
 | `send_forward_msg` | 发送合并转发（自动判定类型） |
+| `forward_friend_single_msg` | 转发单条消息到好友 |
+| `forward_group_single_msg` | 转发单条消息到群 |
 | `delete_msg` | 撤回消息 |
 | `get_msg` | 获取单条消息 |
 | `get_forward_msg` | 获取合并转发内容 |
 | `get_group_msg_history` | 获取群消息历史 |
+| `get_friend_msg_history` | 获取好友消息历史 |
 | `mark_msg_as_read` | 标记消息已读 |
 | `set_msg_emoji_like` | 消息表情回应 |
+| `unset_msg_emoji_like` | 取消消息表情回应 |
 | `handle_quick_operation` | 快速操作 |
 
 ## 发送私聊消息
@@ -749,6 +753,190 @@ console.log(body.data)
 
 - `group_id` 仅群消息存在，私聊不包含此字段。
 
+## 转发单条消息到好友
+
+- API: `forward_friend_single_msg`
+- 描述: 取出 `message_id` 对应的已有消息内容，重新发送（转发）给指定好友。
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| `v0.6.0` | 新增 `forward_friend_single_msg` 接口。 |
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `message_id` | `string` | 是 | - | 待转发的源消息 ID。 |
+| `user_id` | `number \| string` | 是 | - | 接收转发的好友 QQ 号。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "message_id": "<message_id>",
+  "user_id": "<friend_id>"
+}
+```
+:::
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `message_id` | `string` | 转发后新消息的 ID。 | 不要按数字解析。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "message_id": "<message_id>"
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/forward_friend_single_msg' \
+  -H 'Content-Type: application/json' \
+  -d '{"message_id":"<message_id>","user_id":"<friend_id>"}'
+```
+
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/forward_friend_single_msg', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    message_id: '<message_id>',
+    user_id: '<friend_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.data.message_id)
+```
+
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/forward_friend_single_msg",
+    json={
+        "message_id": "<message_id>",
+        "user_id": "<friend_id>",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"]["message_id"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | `message_id` 非法，或转发内容为空。 |
+| `1500` | 拉取源消息失败，或转发发送失败（例如超时、风控、服务器拒绝）。 |
+
+## 转发单条消息到群
+
+- API: `forward_group_single_msg`
+- 描述: 取出 `message_id` 对应的已有消息内容，重新发送（转发）到指定群。
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| `v0.6.0` | 新增 `forward_group_single_msg` 接口。 |
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `message_id` | `string` | 是 | - | 待转发的源消息 ID。 |
+| `group_id` | `number \| string` | 是 | - | 接收转发的群号。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "message_id": "<message_id>",
+  "group_id": "<group_id>"
+}
+```
+:::
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `message_id` | `string` | 转发后新消息的 ID。 | 不要按数字解析。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "message_id": "<message_id>"
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/forward_group_single_msg' \
+  -H 'Content-Type: application/json' \
+  -d '{"message_id":"<message_id>","group_id":"<group_id>"}'
+```
+
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/forward_group_single_msg', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    message_id: '<message_id>',
+    group_id: '<group_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.data.message_id)
+```
+
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/forward_group_single_msg",
+    json={
+        "message_id": "<message_id>",
+        "group_id": "<group_id>",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"]["message_id"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | `message_id` 非法，或转发内容为空。 |
+| `1500` | 拉取源消息失败，或转发发送失败（例如超时、风控、服务器拒绝）。 |
+
 ## 获取合并转发内容
 
 - API: `get_forward_msg`
@@ -914,6 +1102,98 @@ console.log(body.data.messages)
 
 - `message_seq` 优先于 `message_id`。
 
+## 获取好友消息历史
+
+- API: `get_friend_msg_history`
+- 描述: 获取好友（私聊）历史消息记录。对应 icqq `User.getChatHistory`，走 `MessageSvc.PbGetOneDayRoamMsg`。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+| `message_seq` | `number \| string` | 否 | `0`（最新） | 起始时间锚点（时间戳，秒），优先于 `message_id`；`0` 表示从当前时间起。 |
+| `message_id` | `string` | 否 | - | 起始私聊消息 ID，用其时间作为锚点。 |
+| `count` | `number \| string` | 否 | `20` | 拉取条数（最大 `20`）。 |
+| `reverseOrder` | `boolean` | 否 | `false` | 为 `true` 时按时间从旧到新返回。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": "<friend_id>",
+  "count": 20
+}
+```
+:::
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `messages` | `object[]` | 消息列表。 | 每项包含 `user_id`、`time`、`message_seq`、`message_id`、`message`。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "messages": [
+    {
+      "user_id": 0,
+      "time": 1700000000,
+      "message_seq": 12345,
+      "message_id": "<message_id>",
+      "message": [{ "type": "text", "data": { "text": "hi" } }]
+    }
+  ]
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_friend_msg_history' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>","count":20}'
+```
+
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_friend_msg_history', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: '<friend_id>',
+    count: 20
+  })
+})
+
+const body = await res.json()
+console.log(body.data.messages)
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | `message_id` 非私聊消息 ID 或非法。 |
+| `1500` | 拉取或解码失败。 |
+
+### 注意事项
+
+- `message_seq` 优先于 `message_id`；二者均缺省时从当前时间拉取最新记录。
+- 锚点为时间戳（秒）而非群历史那样的消息序号——对齐 icqq `User.getChatHistory(time, cnt)` 的语义。
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_friend_msg_history` 接口。 |
+
 ## 标记消息已读
 
 - API: `mark_msg_as_read`
@@ -980,6 +1260,245 @@ print(body["status"])
 | --- | --- |
 | `1400` | `message_id` 非法。 |
 | `1500` | 标记失败。 |
+
+## 标记私聊消息已读
+
+- API: `mark_private_msg_as_read`
+- 描述: 将与指定好友的私聊会话标记为已读（对齐 icqq `User.markRead`，以当前时间为锚点）。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": "<friend_id>"
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/mark_private_msg_as_read' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/mark_private_msg_as_read', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: '<friend_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/mark_private_msg_as_read",
+    json={"user_id": "<friend_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数非法。 |
+| `1500` | 标记失败。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `mark_private_msg_as_read` 接口。 |
+
+## 标记群消息已读
+
+- API: `mark_group_msg_as_read`
+- 描述: 将指定群的会话标记为已读（对齐 icqq `Group.markRead`，自动解析群内最新消息序号后上报）。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "group_id": "<group_id>"
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/mark_group_msg_as_read' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/mark_group_msg_as_read', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    group_id: '<group_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/mark_group_msg_as_read",
+    json={"group_id": "<group_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数非法。 |
+| `1500` | 拉取最新序号或标记失败。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `mark_group_msg_as_read` 接口。 |
+
+## 戳一戳
+
+- API: `friend_poke` / `group_poke` / `send_poke`
+- 描述: 发送戳一戳（双击头像）。`friend_poke` 戳好友，`group_poke` 戳群成员，`send_poke` 为统一入口（带 `group_id` 走群戳，否则走好友戳）。三者均对齐 icqq `Friend.poke`（`OidbSvc.0xed3`，body `{1:uin, 5:uin}`）/ `Member.poke`（`OidbSvc.0xed3`，body `{1:uin, 2:gid}`）。
+
+### 请求参数
+
+`friend_poke`：
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+| `target_id` | `number \| string` | 否 | `user_id` | 被戳一方；缺省时等于 `user_id`。 |
+
+`group_poke`：
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。 |
+| `user_id` | `number \| string` | 是 | - | 被戳的群成员 QQ 号。 |
+
+`send_poke`：
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 否 | - | 群号；存在则走群戳，否则走好友戳。 |
+| `user_id` | `number \| string` | 是 | - | 被戳一方 QQ 号。 |
+| `target_id` | `number \| string` | 否 | `user_id` | 被戳一方；缺省时等于 `user_id`。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "group_id": "<group_id>",
+  "user_id": "<friend_id>"
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/group_poke' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>","user_id":"<friend_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/send_poke', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    group_id: '<group_id>',
+    user_id: '<friend_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/friend_poke",
+    json={"user_id": "<friend_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数非法。 |
+| `1500` | 戳一戳失败（服务器拒绝或风控）。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `friend_poke` / `group_poke` / `send_poke` 接口。 |
 
 ## 消息表情回应
 
@@ -1062,6 +1581,91 @@ print(body["status"])
 ### 注意事项
 
 - 仅群消息可用，私聊消息返回 `1400`。
+- 若只需取消表态，可直接调用等价接口 `unset_msg_emoji_like`（无需传 `set`）。
+
+## 取消消息表情回应
+
+- API: `unset_msg_emoji_like`
+- 描述: 取消群消息的表情回应（表态）。等价于 `set_msg_emoji_like` 的 `set: false` 形态——LLOneBot 兼容接口。无论请求是否携带 `set`，本接口都强制按取消处理。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `message_id` | `string` | 是 | - | 群消息 ID。仅群消息可用。 |
+| `emoji_id` | `string \| number` | 是 | - | 表情 ID。 |
+| `emoji_type` | `number \| string` | 否 | 自动推断 | 省略时自动推断：可解析为整数且 ≤9999 → `1`（QQ 小表情），否则 → `2`（unicode 表情）。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "message_id": "<message_id>",
+  "emoji_id": "76"
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/unset_msg_emoji_like' \
+  -H 'Content-Type: application/json' \
+  -d '{"message_id":"<message_id>","emoji_id":"76"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/unset_msg_emoji_like', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    message_id: '<message_id>',
+    emoji_id: '76'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/unset_msg_emoji_like",
+    json={
+        "message_id": "<message_id>",
+        "emoji_id": "76",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | `message_id` 非群消息或非法。 |
+| `1500` | 取消表态失败。 |
+
+### 注意事项
+
+- 仅群消息可用，私聊消息返回 `1400`。
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| v0.6.0 | 新增 `unset_msg_emoji_like` 接口（等价 `set_msg_emoji_like` `set=false`）。 |
 
 ## 快速操作
 
