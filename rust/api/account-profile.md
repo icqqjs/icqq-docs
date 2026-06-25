@@ -12,13 +12,19 @@
 | `set_group_portrait` | 设置群头像 |
 | `set_self_longnick` | 设置个性签名 |
 | `set_online_status` | 设置在线状态 |
+| `get_user_status` | 获取用户扩展在线状态 |
+| `get_clientkey` | 获取设备 ClientKey |
 | `get_roaming_stamp` | 获取漫游表情 |
 | `delete_stamp` | 删除漫游表情 |
 | `add_friend_category` | 新增好友分组 |
 | `delete_friend_category` | 删除好友分组 |
 | `rename_friend_category` | 重命名好友分组 |
+| `set_friend_category` | 设置好友分组（移动好友到指定分组） |
+| `set_friend_remark` | 设置好友备注 |
 | `delete_friend` | 删除好友 |
 | `get_unidirectional_friend_list` | 获取单向好友列表 |
+| `get_friends_with_category` | 获取按分组组织的好友列表 |
+| `get_qq_avatar` | 获取头像直链（用户/群） |
 | `delete_unidirectional_friend` | 删除单向好友（不支持，返回 1404） |
 
 ## 点赞
@@ -620,7 +626,12 @@ print(body["status"])
 
 ### 响应参数
 
-成功时 `data` 为 `null`。
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `category_id` | `number` | 新建分组的 id（服务端分配），可直接传给 `set_friend_category` 把好友移入该分组。 |
+| `category_name` | `string` | 新建分组的名称（即请求的 `name`）。 |
+
+> 说明：协议层的「新增分组」请求本身不直接回带 id，桥在新增前后各拉取一次分组列表，取差集得到服务端新分配的 `category_id`，因此返回的是真实 id，而非伪造值。
 
 ### 示例
 
@@ -805,6 +816,168 @@ print(body["status"])
 | `1400` | 参数错误，例如缺少 `id` 或 `name`。 |
 | `1500` | 传输失败。 |
 
+## 设置好友分组
+
+- API: `set_friend_category`
+- 描述: 将指定好友移动到某个分组。对应 icqq `Friend.setClass`，走 `friendlist.MovGroupMemReq`。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+| `category_id` | `number \| string` | 是 | - | 目标分组 ID。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": "<friend_id>",
+  "category_id": 3
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/set_friend_category' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>","category_id":3}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/set_friend_category', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: '<friend_id>',
+    category_id: 3
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/set_friend_category",
+    json={
+        "user_id": "<friend_id>",
+        "category_id": 3,
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `user_id` 或 `category_id`。 |
+| `1500` | 服务器拒绝或传输失败。 |
+
+### 注意事项
+
+- 即使 `category_id` 指向不存在的分组，调用通常也会成功（与 icqq `setClass` 行为一致）。
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `set_friend_category` 接口。 |
+
+## 设置好友备注
+
+- API: `set_friend_remark`
+- 描述: 设置指定好友的备注名。对应 icqq `Friend.setRemark`，走 `ProfileService.ChangeFriendName`。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+| `remark` | `string` | 否 | `""` | 新备注；留空表示清除备注。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": "<friend_id>",
+  "remark": "<your-nick>"
+}
+```
+:::
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/set_friend_remark' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>","remark":"<your-nick>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/set_friend_remark', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: '<friend_id>',
+    remark: '<your-nick>'
+  })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/set_friend_remark",
+    json={
+        "user_id": "<friend_id>",
+        "remark": "<your-nick>",
+    },
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `user_id`。 |
+| `1500` | 服务器拒绝或传输失败。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `set_friend_remark` 接口。 |
+
 ## 删除好友
 
 - API: `delete_friend`
@@ -948,6 +1121,339 @@ print(body["data"])
 | retcode | 说明 |
 | --- | --- |
 | `1500` | 解码失败或传输失败。 |
+
+## 获取头像直链
+
+- API: `get_qq_avatar`
+- 描述: 拼接 QQ 头像直链，纯本地计算，不发起协议请求。`user_id` 与 `group_id` 二选一，同时提供时优先使用 `user_id`。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 否 | - | 用户 QQ 号，返回用户头像直链。 |
+| `group_id` | `number \| string` | 否 | - | 群号，返回群头像直链。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": "<friend_id>"
+}
+```
+:::
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `url` | `string` | 头像直链 URL。 | 用户头像 `https://q.qlogo.cn/g?b=qq&nk=<user_id>&s=640`；群头像 `https://p.qlogo.cn/gh/<group_id>/<group_id>/640`。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "url": "https://q.qlogo.cn/g?b=qq&nk=<friend_id>&s=640"
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_qq_avatar' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_qq_avatar', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: '<friend_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.data.url)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_qq_avatar",
+    json={"user_id": "<friend_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"]["url"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，`user_id` 与 `group_id` 至少需提供其一。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_qq_avatar` 接口。 |
+
+## 获取用户在线状态
+
+- API: `get_user_status`
+- 描述: 获取指定用户的扩展在线状态（对齐 icqq `getStatusInfo`，`OidbSvcTrpcTcp.0x116c_1` 实时请求）。`user_id` 缺省或为 `0` 时查询机器人自身。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 否 | `0`（自身） | 目标 QQ 号；缺省/`0` 查询机器人自身。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": "<friend_id>"
+}
+```
+:::
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `user_id` | `number` | 被查询的 QQ 号。 | - |
+| `status` | `number` | 在线状态码。 | NapCat/LLOneBot 兼容字段。 |
+| `ext_status` | `number` | 扩展在线状态码。 | NapCat/LLOneBot 兼容字段。 |
+| `battery_status` | `number` | 电量状态。 | - |
+| `online_status` | `number` | 在线状态（`onlineStatus`）。 | - |
+| `term_type` | `number` | 终端类型。 | - |
+| `net_type` | `number` | 网络类型。 | - |
+| `term_desc` | `string` | 终端描述。 | - |
+
+::: code-group
+
+```json [JSON]
+{
+  "user_id": 0,
+  "status": 11,
+  "ext_status": 1000,
+  "battery_status": 0,
+  "online_status": 11,
+  "term_type": 0,
+  "net_type": 0,
+  "term_desc": ""
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_user_status' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_user_status', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    user_id: '<friend_id>'
+  })
+})
+
+const body = await res.json()
+console.log(body.data)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_user_status",
+    json={"user_id": "<friend_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1500` | 解码失败或传输失败。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_user_status` 接口。 |
+
+## 获取设备 ClientKey
+
+- API: `get_clientkey`
+- 描述: 获取设备 client key（对齐 icqq `getClientKey`，`OidbSvcTrpcTcp.0x9a2_12` 实时请求）。常用于换取部分网页业务的登录态。
+
+### 请求参数
+
+无。
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| `clientkey` | `string` | 设备 client key（十六进制串）。 | - |
+| `expire_time` | `number` | 过期时间（Unix 秒）。 | 无害扩展字段。 |
+
+::: code-group
+
+```json [JSON]
+{
+  "clientkey": "<client_key_hex>",
+  "expire_time": 1700000000
+}
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_clientkey' \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_clientkey', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({})
+})
+
+const body = await res.json()
+console.log(body.data.clientkey)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_clientkey",
+    json={},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"]["clientkey"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1500` | 解码失败或传输失败（含服务器返回非零 OIDB 错误码、回包缺少 client key）。 |
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_clientkey` 接口。 |
+
+## 获取按分组组织的好友列表
+
+- API: `get_friends_with_category`
+- 描述: 返回按好友分组（分组）组织的好友列表，读取本地缓存（好友列表与分组名在登录后由 `load_friend_list` 预热），不发起实时请求。
+
+### 请求参数
+
+无。
+
+### 响应参数
+
+| 字段 | 类型 | 说明 | 备注 |
+| --- | --- | --- | --- |
+| (数组) | `object[]` | 好友分组列表（按 `category_id` 升序）。 | `data` 本身即为数组。 |
+| `[].category_id` | `number` | 分组 id。 | - |
+| `[].category_name` | `string` | 分组名称。 | 缓存中无对应名称时为空字符串。 |
+| `[].friends` | `object[]` | 该分组下的好友列表。 | - |
+| `[].friends[].user_id` | `number` | 好友 QQ 号。 | - |
+| `[].friends[].nickname` | `string` | 昵称。 | - |
+| `[].friends[].remark` | `string` | 备注。 | - |
+
+::: code-group
+
+```json [JSON]
+[
+  {
+    "category_id": 0,
+    "category_name": "我的好友",
+    "friends": [
+      {
+        "user_id": 0,
+        "nickname": "某人",
+        "remark": "备注"
+      }
+    ]
+  }
+]
+```
+:::
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_friends_with_category' \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_friends_with_category', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({})
+})
+
+const body = await res.json()
+console.log(body.data)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_friends_with_category",
+    json={},
+    timeout=10,
+)
+resp.raise_for_status()
+body = resp.json()
+print(body["data"])
+```
+
+:::
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_friends_with_category` 接口。 |
 
 ## 不支持的接口
 
