@@ -81,6 +81,12 @@ data/
 - `NO_COLOR`（任意非空）或 `CLICOLOR=0` 关闭控制台颜色；`CLICOLOR_FORCE` 强制开启。
 :::
 
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| `v0.6.0` | 修复 `retention_days` 的过期日志压缩/清理从未生效的问题（启动即扫一次，旧日志按期压成 `.gz`、超期删除）；每日轮转的日志**文件名日期改用 UTC+8**，与日志行时间戳一致；写入磁盘的日志会把多媒体下载 URL 精简为仅 `appid`+`fileid`（去掉临时凭据 `rkey` 等，控制台仍打印完整 URL）。 |
+
 ## account —— 凭据 + sign server（必填）
 
 | 字段 | 必填 | 默认/示例 | 说明 |
@@ -194,7 +200,7 @@ bot 主动连出到上游。可配置多个上游。
 | 渠道 | 关键字段 |
 | ---- | ---- |
 | `email`（SMTP） | `smtp_host` / `smtp_port`(默认 465) / `tls`(465 隐式 TLS；`false` 走 STARTTLS) / `username` / `password` / `from` / `to`(列表) |
-| `webhook` | `url`（POST JSON `{event,self_id,time,title,body}`）/ `use_proxy` / `headers`（`["K: V"]`） |
+| `webhook` | `url`（POST JSON `{event,self_id,time,time_str,title,body}`）/ `use_proxy` / `headers`（`["K: V"]`） |
 | `serverchan` | `key`（SendKey） |
 | `dingtalk` | `webhook` / `secret`（可选，开启「加签」时填，HMAC-SHA256） |
 | `feishu` | `webhook` / `secret`（可选，开启「签名校验」时填） |
@@ -212,6 +218,12 @@ bot 主动连出到上游。可配置多个上游。
 `--no-default-features` 构建可裁掉它，二进制不链接 lettre（其余 7 个 HTTP 渠道复用现有
 `reqwest`，零额外依赖）。
 :::
+
+### 版本变化
+
+| 版本 | 变化 |
+| --- | --- |
+| `v0.6.0` | 通知正文里的「时间：」改为渲染 UTC+8 可读时间（`YYYY-MM-DD HH:MM:SS`）；`webhook` 透传载荷新增 `time_str` 字段（UTC+8 可读时间），`time`（unix 秒）保留不变，两者并存。 |
 
 ## 完整配置示例
 
