@@ -23,6 +23,7 @@
 | `send_group_sign` | 群打卡 |
 | `send_group_notice` | 发送群公告 |
 | `set_group_msg_mask` | 群消息免打扰开关 |
+| `get_group_msg_mask` | 读取群消息提醒方式 |
 | `set_group_remark` | 设置群备注 |
 | `get_group_shut_list` | 获取群禁言列表 |
 | `set_friend_add_request` | 处理加好友请求 |
@@ -1460,8 +1461,77 @@ print(body["status"])
 ### 注意事项
 
 - 设置的是**机器人账号自身**在该群的接收设置，对群内其他成员无影响，不需要管理员权限。
-- 仅 NT 登录会话可用（请求以自身 uid 为目标）；非 NT 会话返回 `1500`。
-- 该动作对应逆向自 NTQQ 的 `OidbSvcTrpcTcp.0xa80_1` 命令，无上游 OneBot 标准等价物。
+- 仅 NT 登录会话可用；非 NT 会话返回 `1500`。
+- 无上游 OneBot 标准等价物。
+
+## 获取群消息提醒方式
+
+- API: `get_group_msg_mask`
+- 描述: 读取机器人账号自己在指定群当前的「消息提醒方式」档位，是 [`set_group_msg_mask`](#群消息免打扰-提醒方式) 的读取对偶。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `group_id` | `number \| string` | 是 | - | 群号。推荐传字符串，避免大整数精度问题。 |
+
+### 响应参数
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `group_id` | `number` | 群号。 |
+| `state` | `number` | 当前提醒档位（QQ `GroupMsgMask` 枚举值）：`1`=接收并提醒（正常）、`2`=群助手、`3`=屏蔽群消息、`4`=免打扰（接收但不提醒）。 |
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_group_msg_mask' \
+  -H 'Content-Type: application/json' \
+  -d '{"group_id":"<group_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_group_msg_mask', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ group_id: '<group_id>' })
+})
+
+const body = await res.json()
+console.log(body.data.state) // 1=接收并提醒 2=群助手 3=屏蔽 4=免打扰
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_group_msg_mask",
+    json={"group_id": "<group_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+print(resp.json()["data"]["state"])  # 1=接收并提醒 2=群助手 3=屏蔽 4=免打扰
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | `group_id` 非法。 |
+| `1500` | 读取失败；或当前非 NT 登录会话（缺少自身 uid）。 |
+
+### 注意事项
+
+- 读取的是**机器人账号自身**在该群的提醒档位，不需要管理员权限。
+- 仅 NT 登录会话可用；无上游 OneBot 标准等价物（gocq/NapCat/LLOneBot 均只有群免打扰的设置、无读取）。
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_group_msg_mask` 接口。 |
 
 ## 设置群备注
 

@@ -87,6 +87,7 @@ icqq-rust-onebot 实现了 OneBot 11 标准动作集，并兼容大量 go-cqhttp
 | `send_group_sign` | 群打卡 | [群管理](/rust/api/group-admin) |
 | `send_group_notice` | 发送群公告 | [群管理](/rust/api/group-admin) |
 | `set_group_msg_mask` | 群消息提醒方式（提醒/群助手/屏蔽/免打扰） | [群管理](/rust/api/group-admin) |
+| `get_group_msg_mask` | 读取群消息提醒方式 | [群管理](/rust/api/group-admin) |
 | `get_group_shut_list` | 获取群禁言列表 | [群管理](/rust/api/group-admin) |
 | `set_friend_add_request` | 处理加好友请求 | [群管理](/rust/api/group-admin) |
 | `set_group_add_request` | 处理加群请求/邀请 | [群管理](/rust/api/group-admin) |
@@ -107,6 +108,8 @@ icqq-rust-onebot 实现了 OneBot 11 标准动作集，并兼容大量 go-cqhttp
 | `rename_friend_category` | 重命名好友分组 | [账号资料](/rust/api/account-profile) |
 | `set_friend_category` | 设置好友分组（移动好友到指定分组） | [账号资料](/rust/api/account-profile) |
 | `set_friend_remark` | 设置好友备注 | [账号资料](/rust/api/account-profile) |
+| `set_friend_msg_mask` | 设置好友消息免打扰 | [账号资料](/rust/api/account-profile) |
+| `get_friend_msg_mask` | 读取好友消息免打扰状态 | [账号资料](/rust/api/account-profile) |
 | `get_friends_with_category` | 获取按分组组织的好友列表 | [账号资料](/rust/api/account-profile) |
 | `get_qq_avatar` | 获取头像直链（用户/群） | [账号资料](/rust/api/account-profile) |
 | `get_user_status` | 获取用户扩展在线状态 | [账号资料](/rust/api/account-profile) |

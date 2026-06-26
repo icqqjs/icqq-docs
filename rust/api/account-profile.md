@@ -21,6 +21,8 @@
 | `rename_friend_category` | 重命名好友分组 |
 | `set_friend_category` | 设置好友分组（移动好友到指定分组） |
 | `set_friend_remark` | 设置好友备注 |
+| `set_friend_msg_mask` | 设置好友消息免打扰 |
+| `get_friend_msg_mask` | 读取好友消息免打扰状态 |
 | `delete_friend` | 删除好友 |
 | `get_unidirectional_friend_list` | 获取单向好友列表 |
 | `get_friends_with_category` | 获取按分组组织的好友列表 |
@@ -977,6 +979,141 @@ print(body["status"])
 | 版本 | 说明 |
 | --- | --- |
 | v0.6.0 | 新增 `set_friend_remark` 接口。 |
+
+## 设置好友消息免打扰
+
+- API: `set_friend_msg_mask`
+- 描述: 开关指定好友的「消息免打扰」。开启后该好友消息不再提醒；关闭恢复正常提醒。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+| `enable` | `boolean` | 否 | `true` | `true`（省略时默认）= 开启免打扰；`false` = 关闭。 |
+
+### 响应参数
+
+成功时 `data` 为 `null`。
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+# 开启免打扰（关闭传 "enable": false）
+curl -X POST 'http://127.0.0.1:5700/set_friend_msg_mask' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>","enable":true}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/set_friend_msg_mask', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ user_id: '<friend_id>', enable: true })
+})
+
+const body = await res.json()
+console.log(body.status)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/set_friend_msg_mask",
+    json={"user_id": "<friend_id>", "enable": True},
+    timeout=10,
+)
+resp.raise_for_status()
+print(resp.json()["status"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `user_id`。 |
+| `1500` | 服务器拒绝或传输失败；或当前非 NT 会话 / 好友 uid 未缓存。 |
+
+### 注意事项
+
+- 仅 NT 登录会话可用；无上游 OneBot 标准等价物。
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `set_friend_msg_mask` 接口。 |
+
+## 获取好友消息免打扰状态
+
+- API: `get_friend_msg_mask`
+- 描述: 读取指定好友当前的「消息免打扰」开关状态，是 [`set_friend_msg_mask`](#设置好友消息免打扰) 的读取对偶。
+
+### 请求参数
+
+| 字段 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
+
+### 响应参数
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `user_id` | `number` | 好友 QQ 号。 |
+| `enable` | `boolean` | `true` = 当前为免打扰；`false` = 正常提醒。 |
+
+### 示例
+
+::: code-group
+
+```bash [curl]
+curl -X POST 'http://127.0.0.1:5700/get_friend_msg_mask' \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"<friend_id>"}'
+```
+```js [JavaScript]
+const res = await fetch('http://127.0.0.1:5700/get_friend_msg_mask', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ user_id: '<friend_id>' })
+})
+
+const body = await res.json()
+console.log(body.data.enable)
+```
+```py [Python]
+import requests
+
+resp = requests.post(
+    "http://127.0.0.1:5700/get_friend_msg_mask",
+    json={"user_id": "<friend_id>"},
+    timeout=10,
+)
+resp.raise_for_status()
+print(resp.json()["data"]["enable"])
+```
+
+:::
+
+### 错误码
+
+| retcode | 说明 |
+| --- | --- |
+| `1400` | 参数错误，例如缺少 `user_id`。 |
+| `1500` | 读取失败；或当前非 NT 会话 / 好友 uid 未缓存。 |
+
+### 注意事项
+
+- 仅 NT 登录会话可用；无上游 OneBot 标准等价物。
+
+### 版本变化
+
+| 版本 | 说明 |
+| --- | --- |
+| v0.6.0 | 新增 `get_friend_msg_mask` 接口。 |
 
 ## 删除好友
 
