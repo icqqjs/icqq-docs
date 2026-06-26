@@ -123,7 +123,9 @@ export default defineConfig({
     nav: [
       { text: 'icqq · Node 库', link: '/guide/', activeMatch: '^/(guide|api)/' },
       { text: 'icqq-rs · Rust', link: '/rust/', activeMatch: '^/rust/' },
-      { text: 'GitHub', link: 'https://github.com/icqqjs/icqq' },
+    ],
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/icqqjs/icqq' },
     ],
     footer: {
       copyright: 'Copyright © 2026-present icqqjs contributors',

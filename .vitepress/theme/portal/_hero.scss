@@ -1,0 +1,77 @@
+// Hero block: eyebrow chip, icqq wordmark, slogan.
+
+@use 'tokens' as *;
+
+.hero {
+  position: absolute;
+  top: 13%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+  animation: rise 0.9s $ease both;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: rgba(#fff, 0.78);
+  background: rgba(10, 12, 18, 0.35);
+  border: 1px solid rgba(#fff, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.5s ease;
+
+  .portal[data-mode='node'] & { border-color: rgba($node, 0.4); }
+  .portal[data-mode='rust'] & { border-color: rgba($rust, 0.4); }
+}
+
+.eyebrow-label {
+  min-width: 15ch;
+  text-align: left;
+}
+
+.eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $balanced;
+  box-shadow: 0 0 8px $balanced;
+  transition: background 0.5s, box-shadow 0.5s;
+  animation: pulse 2.4s ease-in-out infinite;
+
+  .portal[data-mode='node'] & { background: $node; box-shadow: 0 0 9px $node; }
+  .portal[data-mode='rust'] & { background: $rust; box-shadow: 0 0 9px $rust; }
+}
+
+.logo-text {
+  font-size: 7rem;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  margin: 1.4rem 0 0;
+  line-height: 0.9;
+  color: #fff;
+  text-shadow:
+    0 0 2px rgba(#fff, 0.5),
+    0 0 70px rgba(#fff, 0.18);
+  transition: text-shadow 0.6s ease;
+
+  .portal[data-mode='node'] & { text-shadow: 0 0 2px rgba(#fff, 0.5), 0 0 80px rgba($node, 0.4); }
+  .portal[data-mode='rust'] & { text-shadow: 0 0 2px rgba(#fff, 0.5), 0 0 80px rgba($rust, 0.4); }
+}
+
+.slogan-text {
+  font-size: 1rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: rgba(#fff, 0.72);
+  margin-top: 1.3rem;
+  text-shadow: 0 2px 18px rgba(#000, 0.6);
+}

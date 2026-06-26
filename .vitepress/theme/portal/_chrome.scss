@@ -1,0 +1,14 @@
+// Global (unscoped) page-shell tweaks applied while the portal is mounted.
+// The portal hides VitePress's stock navbar (`navbar: false` in index.md) and
+// renders its own PortalNav, so only the shell needs global overrides here.
+
+@use 'tokens' as *;
+
+html.portal-page {
+  background-color: $ink !important;
+  overflow: hidden;
+
+  body { background-color: $ink !important; }
+  .VPContent { background-color: transparent !important; }
+  .VPFooter { display: none !important; }
+}

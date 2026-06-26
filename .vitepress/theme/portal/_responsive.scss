@@ -1,0 +1,69 @@
+// Responsive layout: stack the pillars and free the fixed positioning.
+
+@media (max-width: 1100px) {
+  .logo-text { font-size: 5.4rem; }
+  .pillar { width: 300px; }
+}
+
+@media (max-width: 860px) {
+  .portal {
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 120px 22px 60px;
+  }
+
+  .hero {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    margin-bottom: 44px;
+    animation: none;
+  }
+
+  .pillars {
+    position: relative;
+    left: 0;
+    bottom: 0;
+    transform: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+  }
+
+  .pillar {
+    width: 100%;
+    max-width: 380px;
+    animation: none;
+    opacity: 1;
+  }
+
+  // On stacked layout, never dim either card.
+  .portal[data-mode='node'] .pillar-rust,
+  .portal[data-mode='rust'] .pillar-node {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  .pillar-desc { min-height: 0; }
+
+  .portal-foot {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    transform: none;
+    margin-top: 36px;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .logo-text { font-size: 4.2rem; }
+}

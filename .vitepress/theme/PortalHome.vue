@@ -1,258 +1,182 @@
 <script setup>
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { withBase } from 'vitepress'
+import { createNebula } from './portal/nebula.js'
+import PortalNav from './portal/PortalNav.vue'
 
-// 门户首页：选择实现。只保留 Node 库 / Rust 两个入口。
-const impls = [
-  {
-    href: '/guide/',
-    icon: '📦',
-    name: 'icqq',
-    tag: 'Node 库 · TypeScript',
-    desc: '在你自己的 Node 进程里 import 调用——方法调用 + 事件监听，用 JS / TS 写机器人。',
-    points: ['import 即用，无需独立服务', 'EventEmitter 事件 + 链式联系人对象'],
-    cta: '进入 Node 库文档',
-  },
-  {
-    href: '/rust/',
-    icon: '🦀',
-    name: 'icqq-rs',
-    tag: 'OneBot 11 桥 · Rust',
-    desc: '独立进程，对外暴露 OneBot 11 的 HTTP / WebSocket 接口，跨语言对接。',
-    points: ['HTTP / WebSocket 双通道', '单二进制部署，零 JS 运行时'],
-    cta: '进入 Rust 桥文档',
-  },
-]
+// Background (nebula) mode — drives the ambient hero glow.
+const mode = ref('balanced') // 'balanced' | 'node' | 'rust'
+const modeLabel = computed(() => ({
+  balanced: '双运行时 · 平衡态',
+  node: 'Node.js · 进程内运行时',
+  rust: 'Rust · 独立守护进程',
+}[mode.value]))
+
+// What the CARD currently shows (may be manually overridden, independent of bg).
+const cardSide = ref('node') // 'node' | 'rust'
+const activeHref = computed(() => (cardSide.value === 'rust' ? '/rust/' : '/guide/'))
+
+const portalEl = ref(null)
+const showcaseEl = ref(null)
+
+let field = null
+let manual = null     // null = follow the wave; 'node'|'rust' = held by the user
+let cur = 0           // displayed wipe (0 = Node … 1 = Rust)
+
+// Card geometry in the shader's coordinate space, so the card's diagonal wipe
+// lines up with where the wave crest physically crosses the card.
+let axisTL = -0.1
+let axisBR = 0.4
+const FRONT_K = 1.25 // must match the shader's `front = bal * 1.25`
+
+function computeGeom() {
+  const el = showcaseEl.value
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  const W = window.innerWidth
+  const H = window.innerHeight
+  const axis = (sx, sy) => ((sx - W / 2) / H - (0.5 - sy / H)) * 0.66
+  axisTL = axis(r.left, r.top)         // top-left corner = smallest axis
+  axisBR = axis(r.right, r.bottom)     // bottom-right corner = largest axis
+}
+
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
+
+// Manual switch — affects the CARD only, never the background sweep.
+function setCard(side) { manual = side }
+
+onMounted(() => {
+  document.documentElement.classList.add('portal-page')
+  nextTick(computeGeom)
+  window.addEventListener('resize', computeGeom)
+
+  const canvas = document.getElementById('nebula-canvas')
+  field = createNebula(canvas, {
+    onMode: (m) => {
+      mode.value = m
+      // Background settled on a runtime → the card conforms (clears manual hold).
+      if (m === 'node' || m === 'rust') manual = null
+    },
+    onBalance: (b) => {
+      const root = portalEl.value
+      if (!root) return
+      // Spatial target: how far the wave crest has crossed the card (0..1),
+      // unless the user is holding the card on a side.
+      const wave = clamp01((b * FRONT_K - axisTL) / (axisBR - axisTL))
+      const target = manual ? (manual === 'rust' ? 1 : 0) : wave
+      cur += (target - cur) * 0.3
+      root.style.setProperty('--wipe', cur.toFixed(4))
+      const side = cur > 0.5 ? 'rust' : 'node'
+      if (side !== cardSide.value) cardSide.value = side
+    },
+  })
+  field.start()
+})
+
+onUnmounted(() => {
+  document.documentElement.classList.remove('portal-page')
+  window.removeEventListener('resize', computeGeom)
+  field?.destroy()
+})
 </script>
 
 <template>
-  <div class="portal">
-    <header class="portal-hero">
-      <img class="portal-logo" :src="withBase('/logo.png')" alt="icqq" />
-      <h1 class="portal-name">icqq</h1>
-      <p class="portal-text">QQ 协议的多实现文档中心</p>
-      <p class="portal-tagline">一套协议，两种用法，按需选择。</p>
+  <div class="portal" ref="portalEl" :data-mode="mode">
+    <!-- Minimal immersive navbar (only the top-right cluster) -->
+    <PortalNav />
+
+    <!-- Top progress bar: how far the current switch has swept (full = done) -->
+    <div class="switch-bar"><span class="switch-fill"></span></div>
+
+    <!-- CSS fallback / base, sits under the shader -->
+    <div class="fallback-bg"></div>
+
+    <!-- Diagonal-wave nebula -->
+    <canvas id="nebula-canvas"></canvas>
+
+    <!-- Hero -->
+    <header class="hero">
+      <span class="eyebrow">
+        <span class="eyebrow-dot"></span>
+        <span class="eyebrow-label">{{ modeLabel }}</span>
+      </span>
+      <h1 class="logo-text">icqq</h1>
+      <p class="slogan-text">一套协议，两种运行时驱动。</p>
     </header>
 
-    <div class="portal-grid">
-      <a
-        v-for="it in impls"
-        :key="it.href"
-        class="portal-card"
-        :href="withBase(it.href)"
-      >
-        <div class="portal-card-icon">{{ it.icon }}</div>
-        <div class="portal-card-head">
-          <span class="portal-card-name">{{ it.name }}</span>
-          <span class="portal-card-tag">{{ it.tag }}</span>
-        </div>
-        <p class="portal-card-desc">{{ it.desc }}</p>
-        <ul class="portal-card-points">
-          <li v-for="p in it.points" :key="p">{{ p }}</li>
-        </ul>
-        <span class="portal-card-cta">{{ it.cta }} →</span>
-      </a>
+    <!-- Single spotlight showcase — content is wiped over along the same
+         diagonal wave that sweeps the background. -->
+    <div class="showcase-wrap">
+      <div class="showcase-row">
+        <button class="sc-arrow" type="button" aria-label="显示 Node" @click="setCard('node')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <a class="showcase" ref="showcaseEl" :href="withBase(activeHref)">
+          <!-- Node face (base layer) -->
+          <div class="face face-node">
+            <div class="face-head">
+              <span class="face-badge">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                  <path d="M12 2 3.5 7v10L12 22l8.5-5V7L12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 7v6m0 0c-1.5 0-3 .8-3 2.2 0 1 .8 1.6 2 1.6s2.2-.5 2.2-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="face-kicker">运行时 A · 进程内</span>
+            </div>
+            <h2 class="face-title">Node.js SDK</h2>
+            <p class="face-desc">在 JS / TS 进程内原生 <code>import</code> 直接调用，零 IPC、零桥接开销。</p>
+            <ul class="face-chips"><li>原生 import</li><li>TypeScript 类型</li><li>事件驱动</li></ul>
+            <span class="face-cta">进入 Node 文档 →</span>
+          </div>
+
+          <!-- Rust face (revealed diagonally as the wave passes) -->
+          <div class="face face-rust">
+            <div class="face-head">
+              <span class="face-badge">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                  <path d="M12 3l7 4.5v9L12 21l-7-4.5v-9L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M12 7.5l4 2.5v4l-4 2.5-4-2.5v-4l4-2.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span class="face-kicker">运行时 B · 独立进程</span>
+            </div>
+            <h2 class="face-title">Rust Bridge</h2>
+            <p class="face-desc">极速单二进制独立守护进程，OneBot 协议对外，任意语言皆可接入。</p>
+            <ul class="face-chips"><li>单二进制</li><li>&lt; 15 MB RSS</li><li>守护进程</li></ul>
+            <span class="face-cta">进入 Rust 文档 →</span>
+          </div>
+        </a>
+
+        <button class="sc-arrow" type="button" aria-label="显示 Rust" @click="setCard('rust')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <!-- Pager: which runtime is in the spotlight (click to hold the card) -->
+      <div class="pager">
+        <button class="pg pg-node" :class="{ on: cardSide === 'node' }" type="button" aria-label="Node" @click="setCard('node')"></button>
+        <button class="pg pg-rust" :class="{ on: cardSide === 'rust' }" type="button" aria-label="Rust" @click="setCard('rust')"></button>
+      </div>
     </div>
 
-    <p class="portal-foot">
-      不确定选哪个？用 JS / TS 写机器人 → <strong>Node 库</strong>；要 HTTP / OneBot 接口 → <strong>Rust 桥</strong>。
-    </p>
+    <footer class="portal-foot">
+      <p class="foot-tag">一道浪扫过 · Node 与 Rust 此消彼长</p>
+      <p class="foot-copy">Copyright © 2026–present icqqjs contributors</p>
+    </footer>
   </div>
 </template>
 
-<style scoped>
-.portal {
-  max-width: 940px;
-  margin: 0 auto;
-  padding: 72px 24px 88px;
-}
+<!-- Global chrome overrides (page shell) — unscoped on purpose. -->
+<style lang="scss">
+@use './portal/chrome';
+</style>
 
-/* ── Hero ── */
-.portal-hero {
-  text-align: center;
-  margin-bottom: 52px;
-}
-
-.portal-logo {
-  width: 74px;
-  height: 74px;
-  display: block;
-  margin: 0 auto 18px;
-  filter: drop-shadow(0 10px 22px rgba(31, 35, 47, 0.12));
-}
-
-.portal-name {
-  margin: 0;
-  font-size: 3.4rem;
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  background: var(--brand-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.portal-text {
-  margin: 10px 0 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--vp-c-text-1);
-}
-
-.portal-tagline {
-  margin: 12px 0 0;
-  font-size: 1.02rem;
-  color: var(--vp-c-text-2);
-}
-
-/* ── Cards ── */
-.portal-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-.portal-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 28px 26px;
-  border-radius: 16px;
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
-  color: inherit;
-  text-decoration: none !important;
-  overflow: hidden;
-  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
-}
-
-.portal-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--brand-gradient);
-  opacity: 0.55;
-  transition: opacity 0.28s ease;
-}
-
-.portal-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 78, 0, 0.18);
-  box-shadow:
-    0 16px 40px -12px rgba(255, 78, 0, 0.16),
-    0 6px 16px -6px rgba(0, 0, 0, 0.06);
-}
-
-.portal-card:hover::before {
-  opacity: 1;
-}
-
-.portal-card-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 18px;
-  font-size: 27px;
-  border-radius: 13px;
-  background: var(--brand-gradient-soft);
-}
-
-.portal-card-head {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.portal-card-name {
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--vp-c-text-1);
-}
-
-.portal-card-tag {
-  padding: 3px 9px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--vp-c-brand-1);
-  background: var(--vp-c-brand-soft);
-  border-radius: 99px;
-}
-
-.portal-card-desc {
-  margin: 0 0 14px;
-  font-size: 0.95rem;
-  line-height: 1.65;
-  color: var(--vp-c-text-2);
-}
-
-.portal-card-points {
-  list-style: none;
-  margin: 0 0 22px;
-  padding: 0;
-}
-
-.portal-card-points li {
-  position: relative;
-  padding-left: 20px;
-  font-size: 0.88rem;
-  line-height: 1.75;
-  color: var(--vp-c-text-2);
-}
-
-.portal-card-points li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  font-weight: 700;
-  color: var(--vp-c-brand-1);
-}
-
-.portal-card-cta {
-  margin-top: auto;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--vp-c-brand-1);
-}
-
-/* ── Footer hint ── */
-.portal-foot {
-  margin: 40px auto 0;
-  max-width: 620px;
-  text-align: center;
-  font-size: 0.9rem;
-  line-height: 1.7;
-  color: var(--vp-c-text-3);
-}
-
-.portal-foot strong {
-  color: var(--vp-c-brand-1);
-  font-weight: 600;
-}
-
-/* ── Mobile ── */
-@media (max-width: 720px) {
-  .portal {
-    padding: 48px 20px 64px;
-  }
-
-  .portal-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  .portal-name {
-    font-size: 2.6rem;
-  }
-
-  .portal-text {
-    font-size: 1.25rem;
-  }
-}
+<!-- Component-scoped portal styles. -->
+<style scoped lang="scss">
+@use './portal/background';
+@use './portal/hero';
+@use './portal/showcase';
+@use './portal/animations';
+@use './portal/responsive';
 </style>

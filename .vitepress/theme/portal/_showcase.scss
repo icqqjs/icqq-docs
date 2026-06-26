@@ -1,0 +1,229 @@
+// Single spotlight showcase. Two runtime "faces" stacked; complementary diagonal
+// masks (driven by --wipe on the portal root) reveal exactly one per pixel, so the
+// card splits cleanly along the same top-left→bottom-right wave as the background.
+
+@use 'tokens' as *;
+
+// ---- Top progress bar: current switch progress (full = switched) ----
+.switch-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 31;
+  pointer-events: none;
+  background: rgba(#fff, 0.06);
+}
+.switch-fill {
+  display: block;
+  height: 100%;
+  width: calc(var(--wipe) * 100%);
+  background: linear-gradient(90deg, $node, $rust);
+  box-shadow: 0 0 12px rgba($rust, 0.55);
+}
+
+// ---- Showcase ----
+.showcase-wrap {
+  // Centered with auto margins (not translateX) so the entrance animation's
+  // translateY can't clobber the horizontal centering.
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  margin-inline: auto;
+  width: max-content;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: rise-local 0.9s $ease both;
+  animation-delay: 0.1s;
+}
+
+.showcase-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.sc-arrow {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(#fff, 0.12);
+  background: rgba(10, 12, 18, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(#fff, 0.7);
+  cursor: pointer;
+  transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s $ease;
+
+  &:hover {
+    color: #fff;
+    border-color: rgba(#fff, 0.3);
+    background: rgba(#fff, 0.08);
+    transform: scale(1.08);
+  }
+}
+
+.showcase {
+  position: relative;
+  width: 460px;
+  height: 296px;
+  border-radius: 22px;
+  overflow: hidden;
+  text-decoration: none !important;
+  background: rgba(10, 12, 18, 0.46);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  box-shadow: 0 24px 60px -24px rgba(#000, 0.8);
+
+  // Gradient stroke border running the same diagonal as the wave (green→blue).
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba($node, 0.75), rgba($rust, 0.75));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+
+// Complementary diagonal masks — exactly one face shows at each pixel.
+// Each face also carries a faint runtime tint, so mid-wave the card is visibly
+// split into a green region and a blue region with the diagonal boundary between.
+.face-node {
+  background: linear-gradient(135deg, rgba($node, 0.17), rgba($node, 0.05));
+  -webkit-mask-image: linear-gradient(135deg, transparent calc(var(--wipe) * 114% - 14%), #000 calc(var(--wipe) * 114%));
+  mask-image: linear-gradient(135deg, transparent calc(var(--wipe) * 114% - 14%), #000 calc(var(--wipe) * 114%));
+}
+.face-rust {
+  background: linear-gradient(135deg, rgba($rust, 0.17), rgba($rust, 0.05));
+  -webkit-mask-image: linear-gradient(135deg, #000 calc(var(--wipe) * 114% - 14%), transparent calc(var(--wipe) * 114%));
+  mask-image: linear-gradient(135deg, #000 calc(var(--wipe) * 114% - 14%), transparent calc(var(--wipe) * 114%));
+}
+
+.face-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.face-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(#fff, 0.14);
+
+  .face-node & { color: $node; background: rgba($node, 0.1); }
+  .face-rust & { color: $rust; background: rgba($rust, 0.1); }
+}
+
+.face-kicker {
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(#fff, 0.5);
+}
+
+.face-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+
+.face-desc {
+  font-size: 0.92rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: rgba(#fff, 0.68);
+  margin: 0 0 18px;
+
+  code {
+    font-family: 'Fira Code', ui-monospace, monospace;
+    font-size: 0.82em;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: rgba(#fff, 0.1);
+    color: rgba(#fff, 0.9);
+  }
+}
+
+.face-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 auto;
+  padding: 0;
+
+  li {
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: 7px;
+    color: rgba(#fff, 0.75);
+    background: rgba(#fff, 0.06);
+    border: 1px solid rgba(#fff, 0.08);
+  }
+}
+
+.face-cta {
+  font-size: 0.92rem;
+  font-weight: 600;
+
+  .face-node & { color: $node-cta; }
+  .face-rust & { color: $rust-cta; }
+}
+
+// ---- Pager ----
+.pager {
+  display: flex;
+  gap: 10px;
+}
+
+.pg {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: rgba(#fff, 0.25);
+  transition: transform 0.3s $ease, background 0.3s, box-shadow 0.3s;
+
+  &.on { transform: scale(1.35); }
+  &.pg-node.on { background: $node; box-shadow: 0 0 10px rgba($node, 0.9); }
+  &.pg-rust.on { background: $rust; box-shadow: 0 0 10px rgba($rust, 0.9); }
+}
+
+@media (max-width: 560px) {
+  .showcase { width: calc(100vw - 96px); }
+  .sc-arrow { width: 36px; height: 36px; }
+  .face { padding: 24px 22px; }
+  .face-title { font-size: 1.5rem; }
+}
