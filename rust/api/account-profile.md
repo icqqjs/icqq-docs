@@ -821,7 +821,7 @@ print(body["status"])
 ## 设置好友分组
 
 - API: `set_friend_category`
-- 描述: 将指定好友移动到某个分组。对应 icqq `Friend.setClass`，走 `friendlist.MovGroupMemReq`。
+- 描述: 将指定好友移动到某个分组。
 
 ### 请求参数
 
@@ -893,7 +893,7 @@ print(body["status"])
 
 ### 注意事项
 
-- 即使 `category_id` 指向不存在的分组，调用通常也会成功（与 icqq `setClass` 行为一致）。
+- 即使 `category_id` 指向不存在的分组，调用通常也会成功。
 
 ### 版本变化
 
@@ -904,7 +904,7 @@ print(body["status"])
 ## 设置好友备注
 
 - API: `set_friend_remark`
-- 描述: 设置指定好友的备注名。对应 icqq `Friend.setRemark`，走 `ProfileService.ChangeFriendName`。
+- 描述: 设置指定好友的备注名。
 
 ### 请求参数
 
@@ -1346,7 +1346,7 @@ print(body["data"]["url"])
 ## 获取用户在线状态
 
 - API: `get_user_status`
-- 描述: 获取指定用户的扩展在线状态（对齐 icqq `getStatusInfo`，`OidbSvcTrpcTcp.0x116c_1` 实时请求）。`user_id` 缺省或为 `0` 时查询机器人自身。
+- 描述: 获取指定用户的扩展在线状态。`user_id` 缺省或为 `0` 时查询机器人自身。
 
 ### 请求参数
 
@@ -1443,7 +1443,7 @@ print(body["data"])
 ## 获取设备 ClientKey
 
 - API: `get_clientkey`
-- 描述: 获取设备 client key（对齐 icqq `getClientKey`，`OidbSvcTrpcTcp.0x9a2_12` 实时请求）。常用于换取部分网页业务的登录态。
+- 描述: 获取设备 client key。常用于换取部分网页业务的登录态。
 
 ### 请求参数
 

@@ -1027,9 +1027,9 @@ console.log(body.data.messages)
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | --- | --- | --- |
 | `group_id` | `number \| string` | 是 | - | 群号。 |
-| `message_seq` | `number \| string` | 否 | `0`（最新） | 起始消息序号，优先于 `message_id`。 |
+| `message_seq` | `number \| string` | 否 | 最新 | 起始消息序号，优先于 `message_id`；缺省时返回最近的记录。 |
 | `message_id` | `string` | 否 | - | 起始消息 ID，用于推导序号。 |
-| `count` | `number \| string` | 否 | `20` | 拉取条数。 |
+| `count` | `number \| string` | 否 | `20` | 拉取条数，单次最多 `20`。 |
 
 ::: code-group
 
@@ -1100,21 +1100,22 @@ console.log(body.data.messages)
 
 ### 注意事项
 
-- `message_seq` 优先于 `message_id`。
+- `message_seq` 优先于 `message_id`；二者均缺省时返回最近的记录。
+- 单次最多返回 `20` 条；要翻更早的记录，用返回结果中更小的 `message_seq` 作为下一页锚点。
 
 ## 获取好友消息历史
 
 - API: `get_friend_msg_history`
-- 描述: 获取好友（私聊）历史消息记录。对应 icqq `User.getChatHistory`，走 `MessageSvc.PbGetOneDayRoamMsg`。
+- 描述: 获取好友（私聊）历史消息记录。
 
 ### 请求参数
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 | --- | --- | --- | --- | --- |
 | `user_id` | `number \| string` | 是 | - | 好友 QQ 号。 |
-| `message_seq` | `number \| string` | 否 | `0`（最新） | 起始时间锚点（时间戳，秒），优先于 `message_id`；`0` 表示从当前时间起。 |
+| `message_seq` | `number \| string` | 否 | 最新 | 起始锚点。正数为绝对锚点；**负数表示「从最后一条往前 N 条」**；缺省或 `0` 表示返回最新记录。优先于 `message_id`。 |
 | `message_id` | `string` | 否 | - | 起始私聊消息 ID，用其时间作为锚点。 |
-| `count` | `number \| string` | 否 | `20` | 拉取条数（最大 `20`）。 |
+| `count` | `number \| string` | 否 | `20` | 拉取条数。单次实际上限由服务器决定（可超过 `20`）。 |
 | `reverseOrder` | `boolean` | 否 | `false` | 为 `true` 时按时间从旧到新返回。 |
 
 ::: code-group
@@ -1185,8 +1186,8 @@ console.log(body.data.messages)
 
 ### 注意事项
 
-- `message_seq` 优先于 `message_id`；二者均缺省时从当前时间拉取最新记录。
-- 锚点为时间戳（秒）而非群历史那样的消息序号——对齐 icqq `User.getChatHistory(time, cnt)` 的语义。
+- `message_seq` 优先于 `message_id`；二者均缺省时返回最近的消息记录。
+- `message_seq` 传负数表示「从最后一条往前 N 条」，可用于向前翻页；要翻更早的记录，也可改用更早的绝对锚点。
 
 ### 版本变化
 
@@ -1264,7 +1265,7 @@ print(body["status"])
 ## 标记私聊消息已读
 
 - API: `mark_private_msg_as_read`
-- 描述: 将与指定好友的私聊会话标记为已读（对齐 icqq `User.markRead`，以当前时间为锚点）。
+- 描述: 将与指定好友的私聊会话标记为已读（以当前时间为锚点）。
 
 ### 请求参数
 
@@ -1337,7 +1338,7 @@ print(body["status"])
 ## 标记群消息已读
 
 - API: `mark_group_msg_as_read`
-- 描述: 将指定群的会话标记为已读（对齐 icqq `Group.markRead`，自动解析群内最新消息序号后上报）。
+- 描述: 将指定群的会话标记为已读（自动解析群内最新消息序号后上报）。
 
 ### 请求参数
 
@@ -1410,7 +1411,7 @@ print(body["status"])
 ## 戳一戳
 
 - API: `friend_poke` / `group_poke` / `send_poke`
-- 描述: 发送戳一戳（双击头像）。`friend_poke` 戳好友，`group_poke` 戳群成员，`send_poke` 为统一入口（带 `group_id` 走群戳，否则走好友戳）。三者均对齐 icqq `Friend.poke`（`OidbSvc.0xed3`，body `{1:uin, 5:uin}`）/ `Member.poke`（`OidbSvc.0xed3`，body `{1:uin, 2:gid}`）。
+- 描述: 发送戳一戳（双击头像）。`friend_poke` 戳好友，`group_poke` 戳群成员，`send_poke` 为统一入口（带 `group_id` 时戳群成员，否则戳好友）。
 
 ### 请求参数
 
