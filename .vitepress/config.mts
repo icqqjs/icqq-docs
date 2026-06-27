@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import Font from 'vite-plugin-font'
 
 // icqq 多实现文档站。中文站点 + 本地搜索。
 // 站点按「实现」分区，每个实现自成一体（顶栏切实现，侧栏切栏目）：
@@ -117,6 +118,21 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   ignoreDeadLinks: true,
+  // 门户标题/首屏使用 Space Grotesk。不再走 Google Fonts CDN（防墙 + 体积），
+  // 改为自托管 .vitepress/theme/assets/SpaceGrotesk.ttf（可变字体），由
+  // vite-plugin-font(cn-font-split) 按实际用到的字形动态裁剪后注入。
+  // 原始 CDN 链接（如需找回字体/补字重，留作参考）：
+  //   https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap
+  // 字体源文件来自 Google Fonts 仓库：
+  //   https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf
+  vite: {
+    plugins: [
+      Font.vite({
+        // 扫描这些文件里实际出现的字符，只裁剪保留这些字形。
+        scanFiles: ['.vitepress/theme/**/*.vue', 'index.md'],
+      }),
+    ],
+  },
   themeConfig: {
     logo: '/logo.png',
     // 顶栏 = 实现切换直链（点 logo 回门户首页）。当前实现高亮，互不跨跳。
