@@ -4,7 +4,7 @@
 
 .hero {
   position: absolute;
-  top: 13%;
+  top: 9.5%;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -51,27 +51,46 @@
   .portal[data-mode='rust'] & { background: $rust; box-shadow: 0 0 9px $rust; }
 }
 
+// ICQQ — all-caps wordmark with the nebula flowing through the letters.
+// The gradient slides with --wipe (set each frame), so the letters breathe
+// green↔blue exactly with the background wave.
 .logo-text {
-  font-size: 7rem;
-  font-weight: 800;
-  letter-spacing: -0.055em;
+  font-family: var(--brand-font, 'Outfit'), 'Outfit', sans-serif;
+  font-size: clamp(4.6rem, 9vw, 7.4rem);
+  font-weight: 700;
+  letter-spacing: 0.005em;
   margin: 1.4rem 0 0;
-  line-height: 0.9;
-  color: #fff;
-  text-shadow:
-    0 0 2px rgba(#fff, 0.5),
-    0 0 70px rgba(#fff, 0.18);
-  transition: text-shadow 0.6s ease;
+  line-height: 0.92;
+  background: linear-gradient(110deg,
+    $node 0%, $node-cyan 28%, #cfe9ff 50%, $rust 72%, $rust 100%);
+  background-size: 220% 100%;
+  background-position: calc(var(--wipe, 0) * 100%) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 6px 34px rgba(120, 200, 230, 0.28));
 
-  .portal[data-mode='node'] & { text-shadow: 0 0 2px rgba(#fff, 0.5), 0 0 80px rgba($node, 0.4); }
-  .portal[data-mode='rust'] & { text-shadow: 0 0 2px rgba(#fff, 0.5), 0 0 80px rgba($rust, 0.4); }
+  // Wave-coloured accent rule between title and subtitle.
+  &::after {
+    content: "";
+    display: block;
+    width: 64px;
+    height: 3px;
+    margin: 20px auto 0;
+    border-radius: 2px;
+    background: linear-gradient(90deg, $node, $rust);
+    background-size: 220% 100%;
+    background-position: calc(var(--wipe, 0) * 100%) 0;
+    box-shadow: 0 0 14px rgba($rust, 0.45);
+  }
 }
 
 .slogan-text {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 300;
-  letter-spacing: 0.3em;
-  color: rgba(#fff, 0.72);
-  margin-top: 1.3rem;
+  letter-spacing: 0.12em;
+  color: rgba(#fff, 0.74);
+  margin-top: 1.5rem;
   text-shadow: 0 2px 18px rgba(#000, 0.6);
 }

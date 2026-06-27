@@ -4,25 +4,6 @@
 
 @use 'tokens' as *;
 
-// ---- Top progress bar: current switch progress (full = switched) ----
-.switch-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 31;
-  pointer-events: none;
-  background: rgba(#fff, 0.06);
-}
-.switch-fill {
-  display: block;
-  height: 100%;
-  width: calc(var(--wipe) * 100%);
-  background: linear-gradient(90deg, $node, $rust);
-  box-shadow: 0 0 12px rgba($rust, 0.55);
-}
-
 // ---- Showcase ----
 .showcase-wrap {
   // Centered with auto margins (not translateX) so the entrance animation's
@@ -74,35 +55,49 @@
 
 .showcase {
   position: relative;
-  width: 460px;
-  height: 296px;
-  border-radius: 22px;
+  width: min(760px, 86vw);
+  height: clamp(360px, 46vh, 460px);
+  border-radius: 26px;
   overflow: hidden;
   text-decoration: none !important;
   background: rgba(10, 12, 18, 0.46);
   backdrop-filter: blur(16px) saturate(130%);
   -webkit-backdrop-filter: blur(16px) saturate(130%);
-  box-shadow: 0 24px 60px -24px rgba(#000, 0.8);
+  box-shadow: 0 30px 70px -28px rgba(#000, 0.85);
+}
 
-  // Gradient stroke border running the same diagonal as the wave (green→blue).
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba($node, 0.75), rgba($rust, 0.75));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+// ---- Forward-only perimeter progress border ----
+.sc-border {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+
+  rect {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-width: 2.5;
   }
+}
+.sc-border-base {
+  stroke: var(--bar-base, #{$node});
+  opacity: 0.7;
+}
+.sc-border-fill {
+  stroke: var(--bar-fill, #{$rust});
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--p, 0));
+  filter: drop-shadow(0 0 5px var(--bar-fill, #{$rust}));
 }
 
 .face {
   position: absolute;
   inset: 0;
-  padding: 30px 32px;
+  padding: clamp(28px, 4vh, 40px) clamp(30px, 4vw, 46px);
   display: flex;
   flex-direction: column;
   color: #fff;
@@ -113,8 +108,8 @@
 // split into a green region and a blue region with the diagonal boundary between.
 .face-node {
   background: linear-gradient(135deg, rgba($node, 0.17), rgba($node, 0.05));
-  -webkit-mask-image: linear-gradient(135deg, transparent calc(var(--wipe) * 114% - 14%), #000 calc(var(--wipe) * 114%));
-  mask-image: linear-gradient(135deg, transparent calc(var(--wipe) * 114% - 14%), #000 calc(var(--wipe) * 114%));
+  -webkit-mask-image: linear-gradient(135deg, transparent calc(var(--wipe) * 108% - 8%), #000 calc(var(--wipe) * 108%));
+  mask-image: linear-gradient(135deg, transparent calc(var(--wipe) * 108% - 8%), #000 calc(var(--wipe) * 108%));
 }
 .face-rust {
   background: linear-gradient(135deg, rgba($rust, 0.17), rgba($rust, 0.05));
@@ -125,75 +120,88 @@
 .face-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 14px;
+  margin-bottom: 22px;
 }
 
 .face-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
   border: 1px solid rgba(#fff, 0.14);
 
+  svg { width: 24px; height: 24px; }
   .face-node & { color: $node; background: rgba($node, 0.1); }
   .face-rust & { color: $rust; background: rgba($rust, 0.1); }
 }
 
 .face-kicker {
-  font-size: 0.74rem;
+  font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   color: rgba(#fff, 0.5);
 }
 
 .face-title {
-  font-size: 1.85rem;
+  font-size: clamp(2rem, 3.4vw, 2.6rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 0 0 8px;
+  margin: 0 0 12px;
 }
 
 .face-desc {
-  font-size: 0.92rem;
+  font-size: 1.02rem;
   font-weight: 300;
-  line-height: 1.6;
-  color: rgba(#fff, 0.68);
-  margin: 0 0 18px;
+  line-height: 1.65;
+  color: rgba(#fff, 0.72);
+  margin: 0 0 24px;
+  max-width: 40ch;
 
   code {
     font-family: 'Fira Code', ui-monospace, monospace;
     font-size: 0.82em;
-    padding: 1px 6px;
-    border-radius: 5px;
+    padding: 2px 7px;
+    border-radius: 6px;
     background: rgba(#fff, 0.1);
-    color: rgba(#fff, 0.9);
+    color: rgba(#fff, 0.92);
   }
 }
 
 .face-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   list-style: none;
   margin: 0 0 auto;
   padding: 0;
 
   li {
-    font-size: 0.74rem;
+    font-size: 0.82rem;
     font-weight: 500;
-    padding: 4px 11px;
-    border-radius: 7px;
-    color: rgba(#fff, 0.75);
+    padding: 6px 14px;
+    border-radius: 8px;
+    color: rgba(#fff, 0.78);
     background: rgba(#fff, 0.06);
     border: 1px solid rgba(#fff, 0.08);
   }
 }
 
+// Divider above the CTA.
+.face-rule {
+  align-self: stretch;
+  height: 1px;
+  margin: 0 0 16px;
+  background: linear-gradient(90deg, rgba(#fff, 0.16), rgba(#fff, 0.04));
+}
+
 .face-cta {
-  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.02rem;
   font-weight: 600;
 
   .face-node & { color: $node-cta; }

@@ -89,12 +89,15 @@ void main(){
   // ---- Diagonal wave sweep (top-left <-> bottom-right) ----
   // axis: negative toward top-left, positive toward bottom-right.
   float axis = (p.x - p.y) * 0.66;
-  // Organic wavy front so the boundary breaks like a beach wave.
-  float wob = (fbm(p * 1.1 + vec2(t * 1.6, -t)) - 0.5) * 0.34;
-  float front = bal * 1.25 + wob;
-  // Node behind the front, Rust ahead of it; soft diagonal boundary.
-  float w = 1.0 - smoothstep(front - 0.30, front + 0.30, axis);
+  // Big, slow undulation → a rolling beach wave rather than a straight line.
+  float wob = (fbm(p * 0.8 + vec2(t * 0.9, -t * 0.6)) - 0.5) * 0.55;
+  // Reduced amplitude keeps the crest on-screen — it never parks in a corner
+  // and vanishes; the wave just rolls back and forth across the view.
+  float front = bal * 0.82 + wob;
+  float w = 1.0 - smoothstep(front - 0.12, front + 0.12, axis);
   vec3 medium = mix(nodeCol, rustCol, w);
+  // Wide, luminous crest so the wavefront clearly reads as a rolling wave.
+  float edge = smoothstep(0.34, 0.0, abs(axis - front));
 
   vec3 col = deep;
   col += medium * density * 0.26;   // less flat fog
@@ -103,10 +106,10 @@ void main(){
   // Bright breathing cores anchored at the two corners the wave runs between.
   float nI = mix(0.10, 1.65, clamp((1.0 - bal) * 0.5, 0.0, 1.0));
   float rI = mix(0.10, 1.65, clamp((1.0 + bal) * 0.5, 0.0, 1.0));
-  col += nodeCol * nI * 0.13 / (0.04 + length(p - vec2(-0.72, 0.42)));   // top-left
-  col += rustCol * rI * 0.13 / (0.04 + length(p - vec2( 0.72, -0.42)));  // bottom-right
-  // No bright crest: the wave simply carries the new colour across, fully
-  // replacing the screen as it sweeps (the soft color boundary above IS the front).
+  col += nodeCol * nI * 0.11 / (0.05 + length(p - vec2(-0.6, 0.36)));   // top-left
+  col += rustCol * rI * 0.11 / (0.05 + length(p - vec2( 0.6, -0.36)));  // bottom-right
+  // The wave carries the new colour across, led by a bright crest band.
+  col += (medium * 1.3 + 0.10) * edge * 0.32;
 
   // ---- Drifting bokeh (two parallax layers) ----
   float s1 = stars((p + vec2(t * 0.25, 0.0)) * 6.0, 0.16);
@@ -119,7 +122,7 @@ void main(){
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
   col = mix(vec3(lum), col, 1.38);                // cleaner, more vivid color
   col = pow(max(col, 0.0), vec3(0.82));
-  float vig = smoothstep(1.4, 0.1, length(p * vec2(0.78, 1.0)));
+  float vig = smoothstep(1.75, 0.25, length(p * vec2(0.82, 1.0)));
   col *= vig;
   col += (hash(gl_FragCoord.xy + uTime) - 0.5) * 0.016; // film grain
 
@@ -127,16 +130,17 @@ void main(){
 }
 `
 
-export function createNebula(canvas, { onMode, onBalance } = {}) {
+export function createNebula(canvas, { onMode, onBalance, onProgress } = {}) {
   let gl = null
   let program = null
   let rafId = null
-  let startTime = 0
   let paused = false
-  let pinned = null
   let bal = 0
-  let tbal = 0
   let lastMode = null
+  let clock = 0    // monotonic seconds (survives pause/resume)
+  let lastNow = 0
+  const LAP = 14   // seconds per switch lap — slow, languid rolling wave
+  const A = 0.95   // balance amplitude
   const u = {}
 
   function compile(type, src) {
@@ -198,16 +202,29 @@ export function createNebula(canvas, { onMode, onBalance } = {}) {
   function frame(now) {
     rafId = requestAnimationFrame(frame)
     if (paused || !gl) return
-    if (!startTime) startTime = now
-    const time = (now - startTime) / 1000
+    if (!lastNow) lastNow = now
+    const dt = Math.min(0.05, (now - lastNow) / 1000) // clamp to survive tab stalls
+    lastNow = now
+    clock += dt
 
-    // Autonomous diagonal sweep (top-left <-> bottom-right); a pin overrides it.
-    // Slow, languid period so the wave's crossing of the card is clearly visible.
-    if (!pinned) tbal = Math.sin(time * 0.13) * 0.95
-    bal += (tbal - bal) * 0.06
+    // Forward "lap" timeline: one lap = one switch. The balance eases pole-to-pole
+    // each lap (velocity ~0 at the ends → smooth reversal), and the lap parity
+    // decides which runtime is incoming. The progress bar, the diagonal wave and
+    // the card wipe all ride this single monotonic clock.
+    const phase = clock / LAP
+    const lap = Math.floor(phase)
+    const p = phase - lap                       // 0 → 1 within the lap
+    const dir = lap % 2 === 0 ? 1 : -1          // even laps head to Rust, odd to Node
+    // Steady (linear) sweep so the front crosses the centre/card slowly like a
+    // rolling wave, instead of zipping through the middle (smoothstep did that).
+    // The direction reversal happens at the off-card corner → reads as recede.
+    bal = -dir * A + dir * A * 2 * p
+    bal = Math.max(-A, Math.min(A, bal))
+    const incoming = dir > 0 ? 'rust' : 'node'  // colour sweeping in this lap
+    const base = dir > 0 ? 'node' : 'rust'      // colour being covered
 
-    // Continuous balance for synced foreground (card wipe rides the same wave).
     onBalance && onBalance(bal)
+    onProgress && onProgress(p, incoming, base)
 
     const m = bal < -0.16 ? 'node' : bal > 0.16 ? 'rust' : 'balanced'
     if (m !== lastMode) {
@@ -215,7 +232,7 @@ export function createNebula(canvas, { onMode, onBalance } = {}) {
       onMode && onMode(m)
     }
 
-    gl.uniform1f(u.uTime, time)
+    gl.uniform1f(u.uTime, clock)
     gl.uniform2f(u.uRes, canvas.width, canvas.height)
     gl.uniform1f(u.uBalance, bal)
     gl.drawArrays(gl.TRIANGLES, 0, 3)
@@ -223,7 +240,7 @@ export function createNebula(canvas, { onMode, onBalance } = {}) {
 
   function onVisibility() {
     paused = document.hidden
-    if (!paused) startTime = 0 // avoid a time jump after resuming
+    if (!paused) lastNow = 0 // reset the dt baseline; the lap clock continues
   }
 
   function start() {
@@ -239,15 +256,6 @@ export function createNebula(canvas, { onMode, onBalance } = {}) {
     return true
   }
 
-  function pin(side) {
-    pinned = side
-    tbal = side === 'node' ? -0.9 : 0.9
-  }
-
-  function unpin() {
-    pinned = null
-  }
-
   function destroy() {
     window.removeEventListener('resize', resize)
     document.removeEventListener('visibilitychange', onVisibility)
@@ -255,5 +263,5 @@ export function createNebula(canvas, { onMode, onBalance } = {}) {
     rafId = null
   }
 
-  return { start, pin, unpin, destroy }
+  return { start, destroy }
 }

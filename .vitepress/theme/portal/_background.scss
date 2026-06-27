@@ -9,7 +9,9 @@
   height: 100vh;
   min-height: 720px;
   color: #fff;
-  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  // --brand-font = subset Space Grotesk family (set in PortalHome.vue from the
+  // vite-plugin-font import); CJK falls back to Outfit/system.
+  font-family: var(--brand-font, 'Outfit'), 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: hidden;
   user-select: none;
 }
