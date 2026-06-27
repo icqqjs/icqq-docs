@@ -148,11 +148,15 @@
 
 `notice_type: "group_upload"`
 
+::: warning 同时会收到一条群消息
+群文件上传由「含文件的群消息」派生（对齐 NapCat）：你会**先收到一条 `message`（含文件段）**，**再收到这条 `group_upload` 通知**。若你既处理群消息又处理本通知，注意去重，避免重复落库。
+:::
+
 | 字段 | 类型 | 说明 |
 | ---- | ---- | ---- |
 | `group_id` | number | 群号 |
 | `user_id` | number | 上传者 |
-| `file` | object | 文件信息（`id` / `name` / `size` / `busid`） |
+| `file` | object | 文件信息（`id` / `name` / `size` / `busid`）。`id` 即文件 fid，可直接传给 [`get_group_file_url`](../../api/gfs.md) / `delete_group_file`。 |
 
 ---
 
@@ -334,3 +338,96 @@
 | `user_id` | string | 消息发送者 |
 | `operator_id` | string | 操作者 |
 | `message_id` | string | 被撤回的消息 ID |
+
+---
+
+## 对方正在输入
+
+`notice_type: "notify"`, `sub_type: "input_status"`
+
+::: info 扩展事件
+对齐 NapCat `input_status`，非 OneBot 11 标准。仅私聊。`event_type` / `status_text` 由本桥根据协议给出的「开始/结束」二态合成，**非** NapCat 透传的 NTQQ 原始值，仅供参考。
+:::
+
+好友开始（或结束）在私聊里输入时触发。
+
+| 字段 | 类型 | 说明 |
+| ---- | ---- | ---- |
+| `user_id` | number | 正在输入的好友 QQ 号 |
+| `group_id` | number | 恒为 `0`（私聊场景） |
+| `event_type` | number | `1` = 正在输入，`0` = 结束输入 |
+| `status_text` | string | 状态文案（如「对方正在输入...」） |
+
+```json
+{
+  "post_type": "notice",
+  "notice_type": "notify",
+  "sub_type": "input_status",
+  "self_id": "<your-uin>",
+  "time": 1700000000,
+  "user_id": "<friend_id>",
+  "group_id": 0,
+  "event_type": 1,
+  "status_text": "对方正在输入..."
+}
+```
+
+---
+
+## 已读回执
+
+好友/群成员**读到你发的消息**时触发。OneBot 11 无对应事件，为本桥扩展。
+
+### 私聊已读
+
+`notice_type: "friend_read"`
+
+| 字段 | 类型 | 说明 |
+| ---- | ---- | ---- |
+| `user_id` | number | 已读对方的 QQ 号 |
+| `time` | number | 已读时间（时间戳，秒） |
+
+### 群已读
+
+`notice_type: "group_read"`
+
+| 字段 | 类型 | 说明 |
+| ---- | ---- | ---- |
+| `group_id` | number | 群号 |
+| `seq` | number | 已读到的消息序号 |
+
+```json
+{
+  "post_type": "notice",
+  "notice_type": "friend_read",
+  "self_id": "<your-uin>",
+  "time": 1700000000,
+  "user_id": "<friend_id>"
+}
+```
+
+---
+
+## 好友被删除
+
+`notice_type: "friend_decrease"`
+
+::: info 扩展事件
+对齐 icqq `notice.friend.decrease`，非 OneBot 11 标准。
+:::
+
+机器人被某人**删除好友**（或对方解除好友关系）时触发。
+
+| 字段 | 类型 | 说明 |
+| ---- | ---- | ---- |
+| `user_id` | number | 删除你的（前）好友 QQ 号 |
+
+```json
+{
+  "post_type": "notice",
+  "notice_type": "friend_decrease",
+  "self_id": "<your-uin>",
+  "time": 1700000000,
+  "user_id": "<friend_id>"
+}
+```
