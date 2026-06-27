@@ -1,6 +1,6 @@
 <script setup>
 import { inject } from 'vue'
-import { useData } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 import { VPSocialLinks } from 'vitepress/theme'
 
 const { theme, isDark } = useData()
@@ -14,6 +14,8 @@ const toggleAppearance = inject('toggle-appearance', () => { isDark.value = !isD
   <!-- Fully immersive: only a small top-right utility cluster. -->
   <header class="pnav">
     <div class="pnav-right">
+      <a class="pnav-link pnav-link-ts" :href="withBase('/guide/')">TypeScript</a>
+      <a class="pnav-link pnav-link-rust" :href="withBase('/rust/')">Rust</a>
       <VPSocialLinks v-if="social.length" class="pnav-social" :links="social" />
       <button class="pnav-toggle" type="button" aria-label="切换深浅色" @click="toggleAppearance">
         <svg v-if="isDark" class="pnav-ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

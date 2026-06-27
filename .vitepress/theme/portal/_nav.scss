@@ -21,8 +21,34 @@
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
 }
+
+// Plain-text doc links (TypeScript / Rust) with a runtime-coloured dot.
+.pnav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: rgba(#fff, 0.78);
+  text-decoration: none !important;
+  text-shadow: 0 1px 10px rgba(#000, 0.5);
+  transition: color 0.25s;
+
+  &::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transition: box-shadow 0.25s;
+  }
+  &:hover { color: #fff; }
+}
+.pnav-link-ts::before { background: $node; box-shadow: 0 0 7px rgba($node, 0.8); }
+.pnav-link-rust::before { background: $rust; box-shadow: 0 0 7px rgba($rust, 0.8); }
+.pnav-link-ts:hover::before { box-shadow: 0 0 11px rgba($node, 1); }
+.pnav-link-rust:hover::before { box-shadow: 0 0 11px rgba($rust, 1); }
 
 // Reused GitHub social icon
 .pnav-social {
