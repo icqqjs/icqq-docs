@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import taskLists from 'markdown-it-task-lists'
+import { tasklist } from '@mdit/plugin-tasklist'
 
 // icqq 多实现文档站。中文站点 + 本地搜索。
 // 站点按「实现」分区，每个实现自成一体（顶栏切实现，侧栏切栏目）：
@@ -125,7 +125,7 @@ export default defineConfig({
       dark: 'vitesse-dark'
     },
     config: (md) => {
-      md.use(taskLists)
+      md.use(tasklist)
     }
   },
   // 全站品牌字体 Space Grotesk 改为自托管 @font-face，见 theme/custom.css 顶部。
