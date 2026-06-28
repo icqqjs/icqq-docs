@@ -973,3 +973,166 @@ body {
   mask-size: contain;
   vertical-align: -1.5px;
 }
+
+/* ----------------------------------------------------------
+   16. Global macOS Style Code Blocks
+   ---------------------------------------------------------- */
+div[class*="language-"] {
+  position: relative;
+  border-radius: 14px !important;
+  padding-top: 46px !important; /* 46px HomeHero header */
+  background-color: var(--vp-code-block-bg) !important;
+  border: 1px solid var(--vp-c-divider) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+  margin: 16px 0;
+}
+
+/* Force Shiki to inherit our background color so active tabs match perfectly */
+div[class*="language-"] > pre {
+  background-color: transparent !important;
+}
+
+/* Push line numbers down below the 46px macOS title bar */
+div[class*="language-"].line-numbers-mode .line-numbers-wrapper {
+  top: 46px !important;
+  border-right: 1px solid var(--vp-c-divider) !important;
+}
+
+.dark div[class*="language-"] {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* HomeHero 46px Title Bar Background */
+div[class*="language-"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  background-color: var(--vp-c-bg-soft); /* Subtle background for title bar */
+  border-bottom: 1px solid var(--vp-c-divider); /* Separator line */
+  border-radius: 14px 14px 0 0 !important;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* HomeHero Traffic Lights */
+div[class*="language-"]::before {
+  content: "";
+  position: absolute;
+  top: 17px; /* Center in 46px header */
+  left: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f56;
+  box-shadow: 20px 0 0 #ffbd2e, 40px 0 0 #27c93f;
+  z-index: 2 !important;
+}
+
+/* Ensure copy button sits nicely in the 46px title bar */
+div[class*="language-"] > button.copy {
+  z-index: 3 !important;
+  top: 9px !important; /* Centered in 46px (46-28)/2 = 9 */
+  right: 14px !important;
+  width: 28px !important;
+  height: 28px !important;
+  background-size: 16px !important;
+  border-radius: 6px !important;
+}
+
+/* Adjust language tag position for single blocks */
+div[class*="language-"] > span.lang {
+  z-index: 3 !important;
+  top: 14px !important;
+  right: 50px !important;
+  color: var(--vp-c-text-3) !important;
+}
+
+
+/* ----------------------------------------------------------
+   17. Code Group (Tabs) macOS Style Integration
+   ---------------------------------------------------------- */
+.vp-code-group {
+  position: relative;
+  margin-top: 16px;
+  background-color: transparent !important;
+  border-radius: 14px !important;
+}
+
+/* Remove margin from inner code blocks so code-group handles it */
+.vp-code-group div[class*="language-"] {
+  margin: 0 !important;
+  border-radius: 14px !important; /* Force override VitePress's border-radius: 0 !important */
+}
+
+/* Hide the redundant lang tag inside code groups */
+.vp-code-group div[class*="language-"] > span.lang {
+  display: none !important;
+}
+
+/* Move the tabs bar down so it overlays the title bar */
+.vp-code-group .tabs {
+  position: absolute;
+  top: 1px; /* Align inside the 1px border of the code block */
+  left: 82px; /* 14px + 52px (lights) + 16px (gap) = 82px */
+  height: 46px;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end; /* Align tabs to bottom */
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.vp-code-group .blocks {
+  margin-top: 0 !important;
+}
+
+/* Hide VitePress's default active tab blue line entirely */
+.vp-code-group .tabs label::after {
+  display: none !important;
+}
+
+/* Tab labels - exact replication of HomeHero.vue */
+.vp-code-group .tabs label {
+  position: relative;
+  top: 1px; /* Push down 1px to perfectly overlap the border-bottom line */
+  z-index: 3;
+  padding: 8px 14px !important;
+  margin: 0 2px 0 0 !important;
+  border-radius: 8px 8px 0 0 !important;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  background: transparent !important;
+  color: var(--vp-c-text-2) !important;
+  border: 1px solid transparent !important;
+  border-bottom: none !important; /* Open at the bottom */
+  transition: color 0.2s, background-color 0.2s;
+  box-shadow: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tab labels (Hover) */
+.vp-code-group .tabs label:hover {
+  color: var(--vp-c-text-1) !important;
+  background-color: var(--vp-c-bg-mute) !important;
+}
+
+/* Active tab */
+.vp-code-group .tabs input:checked + label,
+.vp-code-group .tabs label.active {
+  z-index: 4 !important; /* Higher than the ::after separator line */
+  color: var(--vp-c-text-1) !important;
+  background-color: var(--vp-code-block-bg) !important; /* Matches code body perfectly */
+  border-color: var(--vp-c-divider) !important; /* Match separator line */
+  border-bottom: 1px solid var(--vp-code-block-bg) !important; /* Mask the divider line underneath */
+  margin-bottom: -1px !important; /* Pull down to overlay the line */
+}

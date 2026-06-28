@@ -119,6 +119,11 @@ export default defineConfig({
   lastUpdated: true,
   ignoreDeadLinks: true,
   markdown: {
+    lineNumbers: true,
+    theme: {
+      light: 'github-light',
+      dark: 'vitesse-dark'
+    },
     config: (md) => {
       md.use(taskLists)
     }
