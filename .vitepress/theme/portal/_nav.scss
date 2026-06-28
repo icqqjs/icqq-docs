@@ -82,3 +82,11 @@
   }
   .pnav-ti { width: 18px; height: 18px; }
 }
+
+// Small phones: tighten the cluster so TypeScript / Rust / GitHub / toggle stay
+// on one line without crowding the edge.
+@media (max-width: 560px) {
+  .pnav { height: 58px; padding: 0 16px; }
+  .pnav-right { gap: 12px; }
+  .pnav-link { font-size: 0.82rem; gap: 5px; }
+}

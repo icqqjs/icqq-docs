@@ -230,7 +230,10 @@
 }
 
 @media (max-width: 560px) {
-  .showcase { width: calc(100vw - 96px); }
+  // Row = arrow(36) + gap(18) + card + gap(18) + arrow(36) = card + 108.
+  // Reserve 124px so the whole row keeps ~8px breathing room each side and the
+  // right arrow is never clipped by the page's overflow-x: hidden.
+  .showcase { width: calc(100vw - 124px); }
   .sc-arrow { width: 36px; height: 36px; }
   .face { padding: 24px 22px; }
   .face-title { font-size: 1.5rem; }

@@ -1,67 +1,55 @@
-// Responsive layout: stack the pillars and free the fixed positioning.
+// Responsive / fallback layout.
+//
+// The default portal is a rigid single-screen composition: hero, showcase and
+// footer are absolutely positioned against a 100vh stage. That only holds when
+// the viewport is both wide and tall enough. When it isn't — narrow phones, or
+// short / landscape windows — those absolute blocks collide (the ICQQ wordmark
+// crashes into the card). Below we drop the absolute positioning and let it all
+// flow in a centered column the page can scroll (scrollbar hidden, see
+// _chrome.scss), so content is never crushed together.
 
-@media (max-width: 1100px) {
-  .logo-text { font-size: 5.4rem; }
-  .pillar { width: 300px; }
-}
-
-@media (max-width: 860px) {
+@mixin portal-flow {
   .portal {
     height: auto;
     min-height: 100vh;
-    overflow-y: auto;
+    min-height: 100dvh; // avoid the mobile URL-bar 100vh jump
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 120px 22px 60px;
+    justify-content: center;
+    gap: clamp(28px, 6vh, 56px);
+    padding: 108px 22px 56px;
   }
 
-  .hero {
-    position: relative;
-    top: 0;
-    left: 0;
-    transform: none;
-    margin-bottom: 44px;
-    animation: none;
-  }
-
-  .pillars {
-    position: relative;
-    left: 0;
-    bottom: 0;
-    transform: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 22px;
-    width: 100%;
-  }
-
-  .pillar {
-    width: 100%;
-    max-width: 380px;
-    animation: none;
-    opacity: 1;
-  }
-
-  // On stacked layout, never dim either card.
-  .portal[data-mode='node'] .pillar-rust,
-  .portal[data-mode='rust'] .pillar-node {
-    opacity: 1;
-    filter: none;
-    transform: none;
-  }
-
-  .pillar-desc { min-height: 0; }
-
+  // Release the viewport-percentage anchoring; stack in normal flow.
+  .hero,
+  .showcase-wrap,
   .portal-foot {
     position: relative;
-    bottom: 0;
-    left: 0;
+    inset: auto;
     transform: none;
-    margin-top: 36px;
-    white-space: normal;
-    text-align: center;
+    animation: none;
   }
+
+  // Let the row (card + arrows) center; card sizing stays owned by _showcase.scss
+  // (incl. its own <560px rule that reserves room for the arrows).
+  .showcase-wrap { width: 100%; }
+
+  .portal-foot { white-space: normal; text-align: center; }
+}
+
+// Not enough height for the absolute composition → flow + scroll.
+@media (max-height: 760px) {
+  @include portal-flow;
+}
+
+// Narrow widths → flow + scroll, plus type tweaks.
+@media (max-width: 860px) {
+  @include portal-flow;
+}
+
+@media (max-width: 1100px) {
+  .logo-text { font-size: 5.4rem; }
 }
 
 @media (max-width: 420px) {
