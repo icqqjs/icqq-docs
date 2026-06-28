@@ -2,52 +2,65 @@
    icqq docs  --  VitePress custom theme（多实现文档站）
    ============================================================ */
 
+/* 自托管品牌字体 Space Grotesk（可变字体，wght 300–700）。
+   文件：.vitepress/public/fonts/SpaceGrotesk.ttf → 站点根 /fonts/…
+   仅含拉丁字形，CJK 自动回退到后续系统字体。 */
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/SpaceGrotesk.ttf') format('truetype');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ----------------------------------------------------------
    1. Design tokens
    ---------------------------------------------------------- */
 :root {
-  /* Brand: orange -> violet */
-  --vp-c-brand-1: #ff4e00;
-  --vp-c-brand-2: #e03d00;
-  --vp-c-brand-3: #ff6a22;
-  --vp-c-brand-soft: rgba(255, 78, 0, 0.14);
+  /* Brand: blue-cyan（取自 naka-cli） */
+  --vp-c-brand-1: #0ea5e9;
+  --vp-c-brand-2: #0284c7;
+  --vp-c-brand-3: #38bdf8;
+  --vp-c-brand-soft: rgba(56, 189, 248, 0.14);
 
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(135deg, #ff4e00 0%, #a832fc 50%, #6f00ff 100%);
+  --vp-home-hero-name-background: linear-gradient(135deg, #0ea5e9 0%, #0ea5e9 50%, #0284c7 100%);
 
   --vp-c-bg: #fafafa;
   --vp-c-bg-soft: #f4f4f4;
   --vp-c-bg-mute: #ebebeb;
 
-  --vp-font-family-base: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* 拉丁字形走自托管 Space Grotesk（@font-face 见文件顶部）；
+     CJK 不含于该字体，自动回退到后续系统字体。 */
+  --vp-font-family-base: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
   --vp-font-size-base: 14.5px;
 
   /* Shared accent gradient for reuse */
-  --brand-gradient: linear-gradient(135deg, #ff4e00, #a832fc, #6f00ff);
+  --brand-gradient: linear-gradient(135deg, #0ea5e9, #0ea5e9, #0284c7);
   --brand-gradient-soft: linear-gradient(135deg,
-    rgba(255, 78, 0, 0.10),
-    rgba(168, 50, 252, 0.08),
-    rgba(111, 0, 255, 0.06));
+    rgba(56, 189, 248, 0.10),
+    rgba(129, 140, 248, 0.08),
+    rgba(2, 132, 199, 0.06));
 }
 
 .dark {
-  --vp-c-brand-1: #ff6a22;
-  --vp-c-brand-2: #ff854a;
-  --vp-c-brand-3: #ff4e00;
-  --vp-c-brand-soft: rgba(255, 106, 34, 0.15);
+  --vp-c-brand-1: #38bdf8;
+  --vp-c-brand-2: #7dd3fc;
+  --vp-c-brand-3: #0ea5e9;
+  --vp-c-brand-soft: rgba(56, 189, 248, 0.15);
 
   --vp-c-bg: #0d0e12;
   --vp-c-bg-soft: #14161d;
   --vp-c-bg-mute: #1d212b;
   --vp-c-bg-alt: #101218;
 
-  --vp-home-hero-name-background: linear-gradient(135deg, #ff854a 0%, #c084fc 60%, #8b5cf6 100%);
-  --brand-gradient: linear-gradient(135deg, #ff854a, #c084fc, #8b5cf6);
+  --vp-home-hero-name-background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 60%, #0ea5e9 100%);
+  --brand-gradient: linear-gradient(135deg, #7dd3fc, #38bdf8, #0ea5e9);
   --brand-gradient-soft: linear-gradient(135deg,
-    rgba(255, 133, 74, 0.10),
-    rgba(192, 132, 252, 0.07),
-    rgba(139, 92, 246, 0.05));
+    rgba(125, 211, 252, 0.10),
+    rgba(56, 189, 248, 0.07),
+    rgba(14, 165, 233, 0.05));
 }
 
 
@@ -174,6 +187,32 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
+/* 根首页（layout: page + HomeHero）：hero 撑满首屏、版权落底、单屏不滚动。
+   VPContent → VPPage → (两层 md wrapper) → .hh，用 flex 链让 .hh 填满，
+   wrapper 用 display:contents 解包，VPFooter 作为 Layout 兄弟自然贴底。 */
+.home-portal .VPContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.home-portal .VPPage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+.home-portal .VPPage > div,
+.home-portal .VPPage > div > div {
+  display: contents;
+}
+.home-portal .hh {
+  flex: 1;
+}
+/* 版权栏更克制，贴底 */
+.home-portal .VPFooter {
+  padding: 18px 24px;
+}
+
 
 /* ----------------------------------------------------------
    7. Hero -- background texture (dot grid + gradient orbs)
@@ -206,20 +245,20 @@ body {
   position: absolute;
   z-index: 0;
   pointer-events: none;
-  /* Top-left orange orb */
+  /* Top-left cyan orb */
   top: -20%;
   left: -10%;
   width: 60%;
   height: 80%;
   background: radial-gradient(ellipse at center,
-    rgba(255, 78, 0, 0.08) 0%,
+    rgba(56, 189, 248, 0.08) 0%,
     transparent 70%);
   filter: blur(60px);
 }
 
 .dark .VPHero::after {
   background: radial-gradient(ellipse at center,
-    rgba(255, 106, 34, 0.06) 0%,
+    rgba(56, 189, 248, 0.06) 0%,
     transparent 70%);
 }
 
@@ -370,13 +409,13 @@ body {
   .VPHero .actions {
     margin-top: 20px !important;
     gap: 10px !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
   }
 
-  /* Keep all 3 buttons on one line by shrinking padding */
   .VPHero .actions .VPButton {
-    padding: 8px 16px !important;
-    font-size: 0.85rem !important;
+    padding: 9px 18px !important;
+    font-size: 0.88rem !important;
   }
 }
 
@@ -415,8 +454,8 @@ body {
   content: "";
   border-radius: 50%;
   background: radial-gradient(ellipse at 50% 50%,
-    rgba(255, 78, 0, 0.12) 0%,
-    rgba(168, 50, 252, 0.08) 40%,
+    rgba(56, 189, 248, 0.12) 0%,
+    rgba(129, 140, 248, 0.08) 40%,
     transparent 70%);
   filter: blur(24px);
   animation: glow-pulse 4s ease-in-out infinite alternate;
@@ -428,8 +467,8 @@ body {
 
 .dark .VPHero .image-container::before {
   background: radial-gradient(ellipse at 50% 50%,
-    rgba(255, 106, 34, 0.14) 0%,
-    rgba(139, 92, 246, 0.10) 40%,
+    rgba(56, 189, 248, 0.14) 0%,
+    rgba(14, 165, 233, 0.10) 40%,
     transparent 70%);
 }
 
@@ -448,7 +487,7 @@ body {
 }
 
 .dark .VPHero .VPImage {
-  filter: drop-shadow(0 8px 20px rgba(255, 106, 34, 0.08));
+  filter: drop-shadow(0 8px 20px rgba(56, 189, 248, 0.08));
 }
 
 @keyframes logo-float {
@@ -609,7 +648,7 @@ body {
   border-radius: 14px !important;
   box-shadow:
     0 2px 8px -2px rgba(0, 0, 0, 0.04),
-    0 0 0 0 rgba(255, 78, 0, 0) !important;
+    0 0 0 0 rgba(56, 189, 248, 0) !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
   overflow: hidden;
   position: relative;
@@ -640,16 +679,16 @@ body {
 
 .VPFeature:hover {
   transform: translateY(-3px);
-  border-color: rgba(255, 78, 0, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.15) !important;
   box-shadow:
-    0 12px 32px -8px rgba(255, 78, 0, 0.10),
+    0 12px 32px -8px rgba(56, 189, 248, 0.10),
     0 4px 12px -2px rgba(0, 0, 0, 0.04) !important;
 }
 
 .dark .VPFeature:hover {
-  border-color: rgba(255, 106, 34, 0.2) !important;
+  border-color: rgba(56, 189, 248, 0.2) !important;
   box-shadow:
-    0 12px 32px -8px rgba(255, 106, 34, 0.12),
+    0 12px 32px -8px rgba(56, 189, 248, 0.12),
     0 4px 12px -2px rgba(0, 0, 0, 0.3) !important;
 }
 
@@ -668,11 +707,11 @@ body {
 
 .VPFeature:hover .icon {
   transform: scale(1.08);
-  box-shadow: 0 4px 16px -4px rgba(255, 78, 0, 0.25);
+  box-shadow: 0 4px 16px -4px rgba(56, 189, 248, 0.25);
 }
 
 .dark .VPFeature:hover .icon {
-  box-shadow: 0 4px 16px -4px rgba(255, 106, 34, 0.3);
+  box-shadow: 0 4px 16px -4px rgba(56, 189, 248, 0.3);
 }
 
 /* Feature card title */
@@ -873,11 +912,11 @@ body {
 }
 
 .vp-doc tr:hover {
-  background-color: rgba(255, 78, 0, 0.02);
+  background-color: rgba(56, 189, 248, 0.02);
 }
 
 .dark .vp-doc tr:hover {
-  background-color: rgba(255, 106, 34, 0.02);
+  background-color: rgba(56, 189, 248, 0.02);
 }
 
 

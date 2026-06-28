@@ -7,7 +7,7 @@ const { Layout } = DefaultTheme
 const route = useRoute()
 
 // 仅在 Rust 桥 landing（/rust/，layout: home）显示其指标统计条。
-// 根门户首页用 PortalHome 组件（layout: page），不走这里。
+// 根首页（/，layout: home）走默认 hero/features，不显示该统计条。
 const isRust = computed(() => route.path.startsWith('/rust'))
 
 const rustStats = [

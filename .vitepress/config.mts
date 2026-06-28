@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitepress'
-import Font from 'vite-plugin-font'
 
 // icqq 多实现文档站。中文站点 + 本地搜索。
 // 站点按「实现」分区，每个实现自成一体（顶栏切实现，侧栏切栏目）：
@@ -113,38 +112,24 @@ const rustSidebar = [
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'icqq',
+  title: 'ICQQ',
   description: 'icqq —— QQ 协议 Node 库，附纯 Rust OneBot 11 桥实现。多实现文档站。',
   cleanUrls: true,
   lastUpdated: true,
   ignoreDeadLinks: true,
-  // 门户标题/首屏使用 Space Grotesk。不再走 Google Fonts CDN（防墙 + 体积），
-  // 改为自托管 .vitepress/theme/assets/SpaceGrotesk.ttf（可变字体），由
-  // vite-plugin-font(cn-font-split) 按实际用到的字形动态裁剪后注入。
-  // 原始 CDN 链接（如需找回字体/补字重，留作参考）：
-  //   https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap
-  // 字体源文件来自 Google Fonts 仓库：
-  //   https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf
-  vite: {
-    plugins: [
-      Font.vite({
-        // 扫描这些文件里实际出现的字符，只裁剪保留这些字形。
-        scanFiles: ['.vitepress/theme/**/*.vue', 'index.md'],
-      }),
-    ],
-  },
+  // 全站品牌字体 Space Grotesk 改为自托管 @font-face，见 theme/custom.css 顶部。
   themeConfig: {
     logo: '/logo.png',
     // 顶栏 = 实现切换直链（点 logo 回门户首页）。当前实现高亮，互不跨跳。
     nav: [
-      { text: 'icqq · Node 库', link: '/guide/', activeMatch: '^/(guide|api)/' },
-      { text: 'icqq-rs · Rust', link: '/rust/', activeMatch: '^/rust/' },
+      { text: 'Node.js', link: '/guide/', activeMatch: '^/(guide|api)/' },
+      { text: 'OneBot', link: '/rust/', activeMatch: '^/rust/' },
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/icqqjs/icqq' },
     ],
     footer: {
-      copyright: 'Copyright © 2026-present icqqjs contributors',
+      copyright: 'Copyright © 2022-present icqqjs contributors',
     },
     search: { provider: 'local' },
     outline: { label: '本页目录', level: [2, 3] },
