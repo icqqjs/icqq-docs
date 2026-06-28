@@ -93,10 +93,10 @@ async function copyCode() {
         </p>
 
         <div class="hh-cta">
-          <a class="hh-btn hh-btn-primary" :href="withBase('/guide/')">
+          <a class="hh-btn hh-btn-primary" :href="withBase('/guide/quickstart')">
             开始使用 · Node <span class="arr">→</span>
           </a>
-          <a class="hh-btn hh-btn-outline" :href="withBase('/rust/')">Rust OneBot</a>
+          <a class="hh-btn hh-btn-outline" :href="withBase('/rust/guide/quickstart')">Rust OneBot</a>
           <a class="hh-btn hh-btn-ghost" href="https://github.com/icqqjs/icqq" target="_blank"
             rel="noreferrer">GitHub</a>
         </div>

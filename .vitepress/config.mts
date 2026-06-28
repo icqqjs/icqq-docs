@@ -133,8 +133,8 @@ export default defineConfig({
     logo: '/logo.png',
     // 顶栏 = 实现切换直链（点 logo 回门户首页）。当前实现高亮，互不跨跳。
     nav: [
-      { text: 'Node.js', link: '/guide/', activeMatch: '^/(guide|api)/' },
-      { text: 'OneBot', link: '/rust/', activeMatch: '^/rust/' },
+      { text: 'Node.js', link: '/guide/quickstart', activeMatch: '^/(guide|api)/' },
+      { text: 'OneBot', link: '/rust/guide/quickstart', activeMatch: '^/rust/' },
     ],
     socialLinks: [
       { icon: 'github', link: 'https://github.com/icqqjs/icqq' },
